@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives.asymmetric import padding as crypto_padding
 import requests
 import pandas as pd
 
-from flask import Flask, request, redirect, abort, jsonify, send_file
+from flask import Flask, request, redirect, abort, jsonify
 from flask_cors import CORS
 
 import warnings
@@ -28,6 +28,7 @@ CORS(app)
 
 # Variables
 LOGIN_URL = "https://portal.svkm.ac.in/usermgmt/login"
+FEEDBACK_URL = "https://portal.svkm.ac.in/MPSTME-NM-M/viewFeedbackDetails"
 BRANCH_CHANGE_URL = "https://portal.svkm.ac.in/usermgmt/"
 HOMEPAGE_URL = "https://portal.svkm.ac.in/MPSTME-NM-M/homepage"
 ATTENDANCE_URL = "https://portal.svkm.ac.in/MPSTME-NM-M/viewDailyAttendanceByStudent"
@@ -115,7 +116,6 @@ def get_attendance_df(soup, semester):
         subject = re.split(r"P\d|U\d|T\d", data[2].text)[0].strip()
         date = datetime.strptime(data[5].text + data[6].text.split("-")[0][:-3], "%d-%m-%Y%H.%M")
         present = data[7].text == "P"
-        time = data[6].text.split("-")[0]
 
         attendance_df = pd.concat([attendance_df, pd.DataFrame([[subject, date, present]], columns=["Subject", "Date", "Present"])], ignore_index=True)
 
@@ -162,15 +162,9 @@ def parse_attendance_df(response_text):
         )
 
     try:
-        min = attendance_df["Date"].min().strftime("%d.%m.%Y")
-        
+        range = f"{attendance_df["Date"].min().strftime("%d.%m.%Y")} - {attendance_df['Date'].max().strftime('%d.%m.%Y')}"
     except:
-        min = "N/A"
-
-    try:
-        max = attendance_df["Date"].max().strftime("%d.%m.%Y")
-    except:
-        max = "N/A"
+        range = "N/A - N/A"
 
     return {
         "Name": name,
@@ -179,7 +173,7 @@ def parse_attendance_df(response_text):
         "Program": program,
         "Semester": semester,
         "Attendance": {
-            "Range": f"{min} - {max}",
+            "Range": range,
             "Data": out_data,
         },
     }
@@ -226,7 +220,7 @@ def get_attendance(username, password):
             if r.status_code != 200:
                 raise Exception("The SVKM portal seems to be down. Please try again later.")
 
-        if r.url != HOMEPAGE_URL:
+        if r.url != HOMEPAGE_URL and r.url != FEEDBACK_URL:
             raise Exception("An unexpected error occurred. Please report this issue to administrator@spirax.me")
 
         response = s.get(ATTENDANCE_URL)
@@ -237,11 +231,6 @@ def get_attendance(username, password):
 @app.route("/", methods=["GET"])
 def home():
     return redirect("https://attendance.spirax.me/", code=301)
-
-
-@app.route("/favicon.ico", methods=["GET"])
-def favicon():
-    return send_file("media/favicon.ico")
 
 
 @app.route("/v1/getAttendanceReport", methods=["POST"])
