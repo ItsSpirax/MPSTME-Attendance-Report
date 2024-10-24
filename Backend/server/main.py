@@ -161,6 +161,17 @@ def parse_attendance_df(response_text):
             }
         )
 
+    try:
+        min = attendance_df["Date"].min().strftime("%d.%m.%Y")
+        
+    except:
+        min = "N/A"
+
+    try:
+        max = attendance_df["Date"].max().strftime("%d.%m.%Y")
+    except:
+        max = "N/A"
+
     return {
         "Name": name,
         "SapID": sap_id,
@@ -168,7 +179,7 @@ def parse_attendance_df(response_text):
         "Program": program,
         "Semester": semester,
         "Attendance": {
-            "Range": f"{attendance_df['Date'].min().strftime('%d.%m.%Y')} - {attendance_df['Date'].max().strftime('%d.%m.%Y')}",
+            "Range": f"{min} - {max}",
             "Data": out_data,
         },
     }
