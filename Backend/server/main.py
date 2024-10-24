@@ -162,9 +162,10 @@ def parse_attendance_df(response_text):
         )
 
     try:
-        range = f"{attendance_df["Date"].min().strftime("%d.%m.%Y")} - {attendance_df['Date'].max().strftime('%d.%m.%Y')}"
+        range = f'{attendance_df["Date"].min().strftime("%d.%m.%Y")} - {attendance_df["Date"].max().strftime("%d.%m.%Y")}'
     except:
         range = "N/A - N/A"
+
 
     return {
         "Name": name,
@@ -235,17 +236,24 @@ def home():
 
 @app.route("/v1/getAttendanceReport", methods=["POST"])
 def attendance():
-    if cf_turnstile_verify(request.json["cf-turnstile-response"], request.headers.get("Cf-Connecting-Ip")):
-        username = request.json["username"].strip()
-        if not username.isdigit():
-            return jsonify({"error": "Invalid username. Please enter your SAP ID."}), 400
-        password = request.json["password"].strip()
-        if not 8 <= len(password) <= 20:
-            return jsonify({"error": "Invalid password. Please enter a valid password."}), 400
-        try:
-            attendance = get_attendance(username, password)
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-        return jsonify({"message": "200: Success", "data": attendance})
-    else:
+    # Captcha verification
+    if not cf_turnstile_verify(request.json["cf-turnstile-response"], request.headers.get("Cf-Connecting-Ip")):
         abort(403)
+
+    # Request validation
+    username = request.json["username"].strip()
+    if not username.isdigit():
+        return jsonify({"error": "Invalid username. Please enter your SAP ID."}), 400
+    
+    password = request.json["password"].strip()
+    if not 8 <= len(password) <= 20:
+        return jsonify({"error": "Invalid password. Please enter a valid password."}), 400
+    
+    # Get attendance
+    try:
+        attendance = get_attendance(username, password)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+    return jsonify({"message": "200: Success", "data": attendance})
+        
