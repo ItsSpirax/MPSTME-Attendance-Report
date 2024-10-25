@@ -125,7 +125,20 @@ def get_attendance_df(soup, semester):
     attendance_df = attendance_df[(attendance_df["Date"] >= start_date) & (attendance_df["Date"] <= end_date)]
 
     # Standardize subject names
-    attendance_df["Subject"] = attendance_df["Subject"].apply(lambda x: difflib.get_close_matches(x, attendance_df["Subject"].unique(), n=1, cutoff=CUTOFF)[0])
+    subjects = []
+    for sub in attendance_df["Subject"].unique():
+        for s in subjects:
+            if difflib.SequenceMatcher(None, sub, s).ratio() > CUTOFF:
+                attendance_df["Subject"] = attendance_df["Subject"].replace(sub, s)
+                break
+        else:
+            subjects.append(sub)
+
+    attendance_df["Subject"] = attendance_df["Subject"].apply(
+        lambda x: difflib.get_close_matches(x, subjects, n=1, cutoff=0.57)[0] 
+        if difflib.get_close_matches(x, subjects, n=1, cutoff=CUTOFF) 
+        else x
+    )
     return attendance_df.sort_values(by="Date"), sapid
 
 
