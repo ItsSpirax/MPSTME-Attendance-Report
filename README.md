@@ -9,6 +9,7 @@ This repository contains the code for a web application that allows MPSTME stude
 * Fetches attendance data from the SVKM portal.
 * Displays attendance summary with subject-wise breakdown.
 * Encrypts user credentials before sending them to the backend.
+* Does not store user credentials or attendance data.
 * Uses Cloudflare Turnstile for bot protection.
 * Simple and easy-to-use interface.
 
@@ -31,7 +32,7 @@ This repository contains the code for a web application that allows MPSTME stude
 1.  **Clone the repository:**
 
     ```bash
-    git clone [https://github.com/ItsSpirax/MPSTME-Attendance-Report](https://github.com/ItsSpirax/MPSTME-Attendance-Report)
+    git clone https://github.com/ItsSpirax/MPSTME-Attendance-Report
     ```
 
 2.  **Install the required packages:**
@@ -44,9 +45,9 @@ This repository contains the code for a web application that allows MPSTME stude
 
     *   Create a `.env` file in the backend directory.
     *   Add your Cloudflare Turnstile API key to the `.env` file:
-
+    <br></br>
     ```
-    TURNSTILE_API_KEY=your_turnstile_api_key
+    TURNSTILE_API_KEY = your_turnstile_api_key
     ```
 
 4.  **Run the backend:**
