@@ -1,18 +1,19 @@
 # Imports
 import base64
 import difflib
-from datetime import datetime
 import json
 import os
 import re
 import warnings
+from datetime import datetime
 
+import numpy as np
+import pandas as pd
+import requests
 from bs4 import BeautifulSoup
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding as crypto_padding
-import requests
-import pandas as pd
 from flask import Flask, request, redirect, abort, jsonify
 from flask_cors import CORS
 
@@ -135,9 +136,7 @@ def get_attendance_df(soup, semester):
             subjects.append(sub)
 
     attendance_df["Subject"] = attendance_df["Subject"].apply(
-        lambda x: difflib.get_close_matches(x, subjects, n=1, cutoff=0.57)[0] 
-        if difflib.get_close_matches(x, subjects, n=1, cutoff=CUTOFF) 
-        else x
+        lambda x: difflib.get_close_matches(x, subjects, n=1, cutoff=0.57)[0] if difflib.get_close_matches(x, subjects, n=1, cutoff=CUTOFF) else x
     )
     return attendance_df.sort_values(by="Date"), sapid
 
@@ -163,6 +162,35 @@ def parse_attendance_df(response_text):
             }
         )
 
+    # Build line graph data
+    line_graph_data = {}
+    for subject in attendance_df["Subject"].unique():
+        subject_df = attendance_df[attendance_df["Subject"] == subject]
+
+        if not subject_df.empty:
+            subject_df.loc[:, "Date"] = pd.to_datetime(subject_df["Date"]).dt.date
+            subject_df = subject_df.sort_values(by="Date")
+
+            subject_df.loc[:, "Percentage"] = round((subject_df["Present"].cumsum() / np.arange(1, len(subject_df) + 1)) * 100, 2)
+
+            line_graph_data[subject] = {int(pd.Timestamp(date).timestamp() * 1000): percentage for date, percentage in zip(subject_df["Date"], subject_df["Percentage"])}
+        else:
+            line_graph_data[subject] = {}
+
+    # Build GitHub graph data
+    github_graph_data = (
+        attendance_df.drop(columns=["Subject"])
+        .assign(Date=pd.to_datetime(attendance_df["Date"]).dt.date)
+        .groupby("Date", as_index=False)
+        .agg(Present=("Present", "sum"))
+        .loc[lambda df: df["Present"] != 0]
+    )
+
+    if github_graph_data.empty:
+        github_graph_data = {}
+    else:
+        github_graph_data = {int(pd.Timestamp(date).timestamp() * 1000): int(count) for date, count in zip(github_graph_data["Date"], github_graph_data["Present"])}
+
     date_range = f"{attendance_df['Date'].min().strftime('%d.%m.%Y')} - {attendance_df['Date'].max().strftime('%d.%m.%Y')}" if not attendance_df.empty else "N/A - N/A"
     return {
         "Name": name,
@@ -170,55 +198,65 @@ def parse_attendance_df(response_text):
         "RollNo": roll_no,
         "Program": program,
         "Semester": semester,
-        "Attendance": {"Range": date_range, "Data": out_data},
+        "Attendance": {"Range": date_range, "Data": out_data, "LineGraph": line_graph_data, "GithubGraph": github_graph_data},
     }
 
 
 # Fetches attendance by logging in and parsing attendance page
 def get_attendance(username, password):
-    with requests.Session() as s:
-        try:
-            # Login request
-            login_data = {
-                "jspname": "nm",
-                "username": encrypt_message(username),
-                "password": encrypt_message(password),
-            }
-            r = s.post(LOGIN_URL, data=login_data, timeout=25)
-            r.raise_for_status()
+    s = requests.Session()
+    try:
+        # Login request
+        login_data = {
+            "jspname": "nm",
+            "username": encrypt_message(username),
+            "password": encrypt_message(password),
+        }
+        r = s.post(LOGIN_URL, data=login_data, timeout=30)
+        r.raise_for_status()
 
-            # Check for incorrect credentials
-            if r.url == LOGIN_URL:
-                raise ValueError("Incorrect username or password. Please double-check and try again.")
+        # Check for incorrect credentials
+        if r.url == LOGIN_URL:
+            raise ValueError("Incorrect username or password. Please double-check and try again.")
 
-            # Handle branch selection if required
-            if r.url == BRANCH_CHANGE_URL:
-                branches = BeautifulSoup(r.text, "lxml").select("option")[1:]
-                selected_branch = next(
-                    (opt["value"] for opt in branches if opt["value"].split("-")[-1] != username[:4]),
-                    None,
-                )
-                if selected_branch:
-                    r = s.post(BRANCH_CHANGE_URL, data={"appName": selected_branch})
-                    r.raise_for_status()
-                    
-            # Final check for successful login
-            if r.url != HOMEPAGE_URL and r.url != FEEDBACK_URL:
-                raise ValueError("An error occurred. Please report this issue to the administrator@spirax.me")
+        # Handle branch selection if required
+        if r.url == BRANCH_CHANGE_URL:
+            branches = BeautifulSoup(r.text, "lxml").select("option")[1:]
+            selected_branch = next(
+                (opt["value"] for opt in branches if opt["value"].split("-")[-1] != username[:4]),
+                None,
+            )
+            if selected_branch:
+                r = s.post(BRANCH_CHANGE_URL, data={"appName": selected_branch})
+                r.raise_for_status()
 
-            # Navigate to attendance page
-            response = s.get(ATTENDANCE_URL)
-            response.raise_for_status()
-            return parse_attendance_df(response.text)
+        # Final check for successful login
+        if r.url != HOMEPAGE_URL and r.url != FEEDBACK_URL:
+            raise ValueError("An error occurred. Please report this issue to the administrator@spirax.me")
 
-        except requests.exceptions.Timeout:
-            raise TimeoutError("The SVKM portal is taking too long to respond. It might be down. Please try again later.")
-        except requests.exceptions.ConnectionError:
-            raise ConnectionError("Unable to connect to the SVKM portal. Please try again later.")
-        except requests.exceptions.HTTPError:
-            raise RuntimeError("The SVKM portal seems to be down. Please try again later.")
-        except Exception as e:
-            raise RuntimeError(f"An error occurred: {e}")
+        # Navigate to attendance page
+        response = s.get(ATTENDANCE_URL)
+        response.raise_for_status()
+        return parse_attendance_df(response.text)
+
+    except requests.exceptions.Timeout:
+        raise TimeoutError("The SVKM portal is taking too long to respond. It might be down. Please try again later.")
+    except requests.exceptions.ConnectionError:
+        raise ConnectionError("Unable to connect to the SVKM portal. Please try again later.")
+    except requests.exceptions.HTTPError:
+        raise RuntimeError("The SVKM portal seems to be down. Please try again later.")
+    except Exception as e:
+        raise RuntimeError(f"An error occurred: {e}")
+    finally:
+        s.close()
+
+
+# Log User-Agent and any errors
+def log(ua, time, error=None):
+    try:
+        requests.get(f"{os.environ["LOGGING_URL"]}?ua={ua}&time={time}&error={error}", timeout=0.5)
+    except:
+        pass
 
 
 # Route to redirect to homepage
@@ -230,7 +268,11 @@ def home():
 # Route to handle attendance report request
 @app.route("/v1/getAttendanceReport", methods=["POST"])
 def attendance():
+    start_time = datetime.now()
     # Verify captcha
+    if "cf-turnstile-response" not in request.json or "username" not in request.json or "password" not in request.json:
+        abort(400)
+
     if not cf_turnstile_verify(request.json["cf-turnstile-response"], request.headers.get("Cf-Connecting-Ip")):
         abort(403)
 
@@ -245,9 +287,11 @@ def attendance():
             400,
         )
 
-    # Fetch and return attendance
+    # Fetch and return attendance (Logs User-Agent and any errors)
     try:
         attendance = get_attendance(username, password)
+        log(request.headers.get("User-Agent"), str(datetime.now() - start_time))
         return jsonify({"message": "200: Success", "data": attendance})
     except Exception as e:
+        log(request.headers.get("User-Agent"), str(datetime.now() - start_time), str(e))
         return jsonify({"error": str(e)}), 500

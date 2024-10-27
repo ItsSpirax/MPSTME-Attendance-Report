@@ -9,7 +9,7 @@ This repository contains the code for a web application that allows MPSTME stude
 * Fetches attendance data from the SVKM portal.
 * Displays attendance summary with subject-wise breakdown.
 * Encrypts user credentials before sending them to the backend.
-* Does not store user credentials or attendance data.
+* Does not store user credentials or attendance data. Logs user agent and errors only for debugging purposes.
 * Uses Cloudflare Turnstile for bot protection.
 * Simple and easy-to-use interface.
 
