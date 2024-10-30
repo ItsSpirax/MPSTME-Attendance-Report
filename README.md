@@ -59,7 +59,7 @@ This repository contains the code for a web application that allows MPSTME stude
 5.  **Deploy the frontend:**
 
     *   The frontend can be deployed to any web server.
-    *   The repository includes a `gh-pages` action that can be used to deploy the frontend to GitHub Pages.
+    *   The repository is hosted on Cloudflare Pages.
 
 ## Usage
 
