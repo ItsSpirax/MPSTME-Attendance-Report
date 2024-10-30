@@ -344,20 +344,20 @@ def get_attendance(username, password):
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "lxml")
 
-    except requests.exceptions.Timeout as e:
+    except requests.exceptions.Timeout:
         raise ConnectionError(
-            f"(CE-1) The SVKM portal is taking too long to respond. It might be down. Please try again later. {e}"
-        ) from e
+            "(CE-1) The SVKM portal is taking too long to respond. It might be down. Please try again later."
+        )
 
-    except requests.exceptions.ConnectionError as e:
+    except requests.exceptions.ConnectionError:
         raise ConnectionError(
-            f"(CE-2) Unable to connect to the SVKM portal. Please try again later. {e}"
-        ) from e
+            "(CE-2) Unable to connect to the SVKM portal. Please try again later."
+        )
 
-    except requests.exceptions.HTTPError as e:
+    except requests.exceptions.HTTPError:
         raise ConnectionError(
-            f"(CE-3) The SVKM portal returned an error. Please try again later. {e}"
-        ) from e
+            "(CE-3) The SVKM portal returned an error. Please try again later."
+        )
 
     finally:
         s.close()
