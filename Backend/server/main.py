@@ -14,7 +14,7 @@ from bs4 import BeautifulSoup
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding as crypto_padding
-from flask import Flask, request, redirect, abort, jsonify
+from flask import Flask, request, redirect, jsonify
 from flask_cors import CORS
 
 # Disable future warnings
@@ -23,6 +23,7 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 # Flask app initialization and CORS
 app = Flask(__name__)
 CORS(app)
+
 
 # URLs for different portal functionalities
 LOGIN_URL = "https://portal.svkm.ac.in/usermgmt/login"
@@ -67,6 +68,7 @@ PUBLIC_KEY = serialization.load_pem_public_key(
 
 # Regex for subject code pattern
 subject_pattern = re.compile(r"P\d|U\d|T\d")
+
 
 
 # Helper function to verify captcha with Cloudflare Turnstile
@@ -135,9 +137,7 @@ def get_attendance_df(soup, semester):
         else:
             subjects.append(sub)
 
-    attendance_df["Subject"] = attendance_df["Subject"].apply(
-        lambda x: difflib.get_close_matches(x, subjects, n=1, cutoff=0.57)[0] if difflib.get_close_matches(x, subjects, n=1, cutoff=CUTOFF) else x
-    )
+    attendance_df["Subject"] = attendance_df["Subject"].apply(lambda x: difflib.get_close_matches(x, subjects, n=1, cutoff=0.57)[0] if difflib.get_close_matches(x, subjects, n=1, cutoff=CUTOFF) else x)
     return attendance_df.sort_values(by="Date"), sapid
 
 
@@ -178,13 +178,7 @@ def parse_attendance_df(response_text):
             line_graph_data[subject] = {}
 
     # Build GitHub graph data
-    github_graph_data = (
-        attendance_df.drop(columns=["Subject"])
-        .assign(Date=pd.to_datetime(attendance_df["Date"]).dt.date)
-        .groupby("Date", as_index=False)
-        .agg(Present=("Present", "sum"))
-        .loc[lambda df: df["Present"] != 0]
-    )
+    github_graph_data = attendance_df.drop(columns=["Subject"]).assign(Date=pd.to_datetime(attendance_df["Date"]).dt.date).groupby("Date", as_index=False).agg(Present=("Present", "sum")).loc[lambda df: df["Present"] != 0]
 
     if github_graph_data.empty:
         github_graph_data = {}
@@ -217,7 +211,7 @@ def get_attendance(username, password):
 
         # Check for incorrect credentials
         if r.url == LOGIN_URL:
-            raise ValueError("Incorrect username or password. Please double-check and try again.")
+            raise ValueError("(VE-1) Incorrect username or password. Please double-check and try again.")
 
         # Handle branch selection if required
         if r.url == BRANCH_CHANGE_URL:
@@ -232,7 +226,7 @@ def get_attendance(username, password):
 
         # Final check for successful login
         if r.url != HOMEPAGE_URL and r.url != FEEDBACK_URL:
-            raise ValueError("An error occurred. Please report this issue to the administrator@spirax.me")
+            raise RuntimeError("(RE-1) An error occurred. Please report this issue to the administrator@spirax.me")
 
         # Navigate to attendance page
         response = s.get(ATTENDANCE_URL)
@@ -240,58 +234,72 @@ def get_attendance(username, password):
         return parse_attendance_df(response.text)
 
     except requests.exceptions.Timeout:
-        raise TimeoutError("The SVKM portal is taking too long to respond. It might be down. Please try again later.")
+        raise ConnectionError("(CE-1) The SVKM portal is taking too long to respond. It might be down. Please try again later.")
+    
     except requests.exceptions.ConnectionError:
-        raise ConnectionError("Unable to connect to the SVKM portal. Please try again later.")
+        raise ConnectionError("(CE-2) Unable to connect to the SVKM portal. Please try again later.")
+    
     except requests.exceptions.HTTPError:
-        raise RuntimeError("The SVKM portal seems to be down. Please try again later.")
+        raise ConnectionError("(CE-3) The SVKM portal seems to be down. Please try again later.")
+    
     except Exception as e:
-        raise RuntimeError(f"An error occurred: {e}")
+        raise e
+    
     finally:
         s.close()
 
 
+# Validate request for attendance report
+def validate_request(request):
+    if "cf-turnstile-response" not in request.json or "username" not in request.json or "password" not in request.json:
+        raise ValueError("(VE-2) Invalid request. Missing Fields.")
+
+    if not cf_turnstile_verify(request.json["cf-turnstile-response"], request.headers.get("Cf-Connecting-Ip")):
+        raise ValueError("(VE-3) Invalid Captcha. Please try again.")
+
+    if not request.json["username"].isdigit() and not 8 <= len(request.json["password"]) <= 20:
+        raise ValueError("(VE-4) Invalid username or password. Please double-check and try again.")
+
+
 # Log User-Agent and any errors
-def log(ua, time, error=None):
+def log(ua, start_time, error=None, type=None):
     try:
-        requests.get(f"{os.environ["LOGGING_URL"]}?ua={ua}&time={time}&error={error}", timeout=0.5)
+        requests.get(f"{os.environ["LOGGING_URL"]}?ua={ua}&time={str(datetime.now() - start_time)}&error={error}&type={type}", timeout=0.5)
     except:
         pass
+
 
 
 # Route to redirect to homepage
 @app.route("/", methods=["GET"])
 def home():
-    return redirect("https://attendance.spirax.me/", code=301)
+    return redirect("https://attn.spirax.me/", code=301)
 
 
 # Route to handle attendance report request
 @app.route("/v1/getAttendanceReport", methods=["POST"])
 def attendance():
     start_time = datetime.now()
-    # Verify captcha
-    if "cf-turnstile-response" not in request.json or "username" not in request.json or "password" not in request.json:
-        abort(400)
 
-    if not cf_turnstile_verify(request.json["cf-turnstile-response"], request.headers.get("Cf-Connecting-Ip")):
-        abort(403)
-
-    # Validate request data
-    username = request.json["username"].strip()
-    if not username.isdigit():
-        return jsonify({"error": "Invalid username. Please enter your SAP ID."}), 400
-    password = request.json["password"].strip()
-    if not 8 <= len(password) <= 20:
-        return (
-            jsonify({"error": "Invalid password. Please enter a valid password."}),
-            400,
-        )
-
-    # Fetch and return attendance (Logs User-Agent and any errors)
+    # Handle request and logging
     try:
-        attendance = get_attendance(username, password)
-        log(request.headers.get("User-Agent"), str(datetime.now() - start_time))
+        validate_request(request)
+        attendance = get_attendance(request.json["username"], request.json["password"])
+        log(request.headers.get("User-Agent"), start_time)
         return jsonify({"message": "200: Success", "data": attendance})
+
+    except ValueError as ve:
+        log(request.headers.get("User-Agent"), start_time, str(ve), type="VE")
+        return jsonify({"error": str(ve)}), 400
+
+    except ConnectionError as ce:
+        log(request.headers.get("User-Agent"), start_time, str(ce), type="CE")
+        return jsonify({"error": str(ce)}), 503
+
+    except RuntimeError as re:
+        log(request.headers.get("User-Agent"), start_time, str(re), type="RE")
+        return jsonify({"error": str(re)}), 500
+
     except Exception as e:
-        log(request.headers.get("User-Agent"), str(datetime.now() - start_time), str(e))
-        return jsonify({"error": str(e)}), 500
+        log(request.headers.get("User-Agent"), start_time, str(e), type="GE")
+        return jsonify({"error": "(GE-1) An unexpected error occurred. Please try again later."}), 500
