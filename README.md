@@ -44,10 +44,11 @@ This repository contains the code for a web application that allows MPSTME stude
 3.  **Set up environment variables:**
 
     *   Create a `.env` file in the backend directory.
-    *   Add your Cloudflare Turnstile API key to the `.env` file:
+    *   Add your Cloudflare Turnstile Secret and Logging URL to the `.env` file:
     <br></br>
     ```
-    TURNSTILE_API_KEY = your_turnstile_api_key
+    TURNSTILE_SECRET = your_turnstile_secret
+    LOGGING_URL = your_logging_url
     ```
 
 4.  **Run the backend:**
