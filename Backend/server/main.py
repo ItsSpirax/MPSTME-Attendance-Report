@@ -5,7 +5,6 @@ import os
 import re
 from datetime import datetime
 
-import numpy as np
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
@@ -242,7 +241,10 @@ def generate_report(soup):
                 subject_df = subject_df.sort_values(by="Date")
 
                 subject_df.loc[:, "Percentage"] = round(
-                    (subject_df["Present"].cumsum() / np.arange(1, len(subject_df) + 1))
+                    (
+                        subject_df["Present"].cumsum()
+                        / list(range(1, len(subject_df) + 1))
+                    )
                     * 100,
                     2,
                 )
@@ -374,7 +376,11 @@ def home():
 # Route to handle attendance report request
 @app.route("/v1/getAttendanceReport", methods=["POST"])
 def attendance():
-    """Handles the /v1/getAttendanceReport route for fetching attendance data."""
+
+    # Website sends a ping request onload to warm up the function
+    if request.args.get("ping") == "true":
+        return jsonify({"message": "Pong"})
+
     start_time = datetime.now()
 
     try:
