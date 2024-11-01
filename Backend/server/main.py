@@ -5,7 +5,6 @@ import os
 import re
 from datetime import datetime
 
-import numpy as np
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
@@ -67,12 +66,12 @@ SVKM_URLS = {
 # Helper functions
 def turnstile_verify(request):
     """Verifies the Cloudflare Turnstile captcha response."""
-    if "cf-turnstile-response" not in request.json:
+    if "captcha" not in request.json:
         raise ValueError("(VE-7) Missing captcha response. Please try again.")
 
     data = {
         "secret": os.environ["TURNSTILE_SECRET"],
-        "response": request.json["cf-turnstile-response"],
+        "response": request.json["captcha"],
         "remoteip": request.headers.get("Cf-Connecting-Ip"),
     }
 
@@ -85,7 +84,7 @@ def turnstile_verify(request):
         raise ValueError(f"(VE-8) Captcha verification failed: {e}") from e
 
     if not json.loads(response.content).get("success"):
-        raise ValueError("(VE-9) Captcha verification failed.")
+        raise ValueError("(VE-9) Captcha verification failed. Please try again.")
 
     return True
 
@@ -242,7 +241,10 @@ def generate_report(soup):
                 subject_df = subject_df.sort_values(by="Date")
 
                 subject_df.loc[:, "Percentage"] = round(
-                    (subject_df["Present"].cumsum() / np.arange(1, len(subject_df) + 1))
+                    (
+                        subject_df["Present"].cumsum()
+                        / list(range(1, len(subject_df) + 1))
+                    )
                     * 100,
                     2,
                 )
@@ -344,19 +346,19 @@ def get_attendance(username, password):
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "lxml")
 
-    except requests.exceptions.Timeout as e:
+    except requests.exceptions.Timeout:
         raise ConnectionError(
-            f"(CE-1) The SVKM portal is taking too long to respond. It might be down. Please try again later. {e}"
-        ) from e
+            "(CE-1) The SVKM portal is taking too long to respond. It might be down. Please try again later."
+        )
 
-    except requests.exceptions.ConnectionError as e:
+    except requests.exceptions.ConnectionError:
         raise ConnectionError(
-            f"(CE-2) Unable to connect to the SVKM portal. Please try again later. {e}"
-        ) from e
+            "(CE-2) Unable to connect to the SVKM portal. Please try again later."
+        )
 
     except requests.exceptions.HTTPError as e:
         raise ConnectionError(
-            f"(CE-3) The SVKM portal returned an error. Please try again later. {e}"
+            f"(CE-3) The SVKM portal returned an error: {e}"
         ) from e
 
     finally:
@@ -374,7 +376,11 @@ def home():
 # Route to handle attendance report request
 @app.route("/v1/getAttendanceReport", methods=["POST"])
 def attendance():
-    """Handles the /v1/getAttendanceReport route for fetching attendance data."""
+
+    # Website sends a ping request onload to warm up the function
+    if request.args.get("ping") == "true":
+        return jsonify({"message": "Pong"})
+
     start_time = datetime.now()
 
     try:
