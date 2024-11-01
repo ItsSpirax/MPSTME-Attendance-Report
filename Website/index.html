@@ -93,7 +93,7 @@
         <!-- Login Container End -->
 
         <!-- Attendance Report Container Start -->
-        <div class="pt-2 pb-5" id="attendance-report-container" style="display: block;">
+        <div class="pt-2 pb-5" id="attendance-report-container" style="display: none;">
           <div class="row justify-content-center">
             <div class="col-12 col-md-10 col-lg-8">
               
@@ -288,6 +288,17 @@
                   title: ctx => ctx[0].label.slice(0, 12).replace(/,\s*$/, ""),
                   label: ctx => `${ctx.dataset.label || ''}: ${ctx.raw || 0}%`
                 }
+              },
+              annotation: {
+                annotations: [{
+                  type: 'line',
+                  mode: 'horizontal',
+                  scaleID: 'y',
+                  value: 80,
+                  borderColor: 'rgba(255, 255, 255, 0.5)',
+                  borderWidth: 1,
+                  borderDash: [5, 5]
+                }]
               }
             }
           }
@@ -298,7 +309,7 @@
       }
 
       function renderGithubChart(data) {
-        const cal = new CalHeatMap();
+        const cal = new CalHeatmap();
         cal.paint({
           itemSelector: '#github-graph',
           domain: 'month',
@@ -339,7 +350,7 @@
 
       const spinner = () => setTimeout(() => document.getElementById('spinner')?.classList.remove('show'), 1);
       spinner();
-      
+
       const debounce = (func, delay) => {
         let timeout;
         return function(...args) {
