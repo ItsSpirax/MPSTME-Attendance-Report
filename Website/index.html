@@ -59,7 +59,7 @@
         <!-- Login Container Start -->
         <div class="container-fluid pt-4 px-4">
           <div class="row justify-content-center">
-            <div class="col-12 col-md-8 col-lg-6 col-xl-4">
+            <div class="col-12 col-md-9 col-lg-8 col-xl-4">
               <div class="bg-secondary rounded h-100 p-4">
                 <form id="attendance-form">
                   <div class="mb-3">
@@ -95,7 +95,7 @@
         <!-- Attendance Report Container Start -->
         <div class="pt-2 pb-5" id="attendance-report-container" style="display: none;">
           <div class="row justify-content-center">
-            <div class="col-12 col-md-10 col-lg-8">
+            <div class="col-12 col-md-10 col-xl-8">
               
               <div class="container-fluid pt-4">
                 <div class="bg-secondary rounded h-100 p-4" style="overflow-x: auto;">
@@ -125,7 +125,7 @@
 
         <!-- Footer Start -->
         <footer class="bg-dark text-center py-3" style="position: sticky; bottom: 0; width: 100%;">
-          &copy; <a rel="noopener" href="https://github.com/ItsSpirax" class="text-light">Adith</a>, All Rights Reserved.
+          &copy; <a rel="noopener" href="https://github.com/ItsSpirax">Adith</a>, All Rights Reserved.
         </footer>
         <!-- Footer End -->
       </div>
@@ -238,7 +238,7 @@
           row.insertCell().textContent = Present;
           row.insertCell().textContent = Total;
           row.insertCell().textContent = `${Percentage}%`;
-          row.style.color = Percentage < 80 ? 'red' : Percentage === 100 ? '#32CD32' : 'white';
+          row.style.color = Percentage < 80 ? '#de0a26' : Percentage === 100 ? '#32cd32' : '#ebe8e8';
         });
       }
 
@@ -295,7 +295,7 @@
                   mode: 'horizontal',
                   scaleID: 'y',
                   value: 80,
-                  borderColor: 'rgba(255, 255, 255, 0.5)',
+                  borderColor: 'rgba(255, 0, 0, 0.5);',
                   borderWidth: 1,
                   borderDash: [5, 5]
                 }]
