@@ -66,7 +66,7 @@ SVKM_URLS = {
 # Helper functions
 def turnstile_verify(request):
     """Verifies the Cloudflare Turnstile captcha response."""
-    if "cf-turnstile-response" not in request.json:
+    if "z" not in request.json:
         raise ValueError("(VE-7) Missing captcha response. Please try again.")
 
     data = {
@@ -84,7 +84,7 @@ def turnstile_verify(request):
         raise ValueError(f"(VE-8) Captcha verification failed: {e}") from e
 
     if not json.loads(response.content).get("success"):
-        raise ValueError("(VE-9) Captcha verification failed.")
+        raise ValueError("(VE-9) Captcha verification failed. Please try again.")
 
     return True
 
@@ -356,10 +356,10 @@ def get_attendance(username, password):
             "(CE-2) Unable to connect to the SVKM portal. Please try again later."
         )
 
-    except requests.exceptions.HTTPError:
+    except requests.exceptions.HTTPError as e:
         raise ConnectionError(
-            "(CE-3) The SVKM portal returned an error. Please try again later."
-        )
+            f"(CE-3) The SVKM portal returned an error: {e}"
+        ) from e
 
     finally:
         s.close()
