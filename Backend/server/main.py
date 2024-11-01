@@ -66,12 +66,12 @@ SVKM_URLS = {
 # Helper functions
 def turnstile_verify(request):
     """Verifies the Cloudflare Turnstile captcha response."""
-    if "z" not in request.json:
+    if "captcha" not in request.json:
         raise ValueError("(VE-7) Missing captcha response. Please try again.")
 
     data = {
         "secret": os.environ["TURNSTILE_SECRET"],
-        "response": request.json["cf-turnstile-response"],
+        "response": request.json["captcha"],
         "remoteip": request.headers.get("Cf-Connecting-Ip"),
     }
 
