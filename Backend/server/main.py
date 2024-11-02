@@ -222,12 +222,19 @@ def generate_report(soup):
                 attendance_df[attendance_df["Subject"] == subject].shape[0]
             )
             percentage = round((present_count / total_count) * 100, 2)
+            if percentage < 80:
+                required_attendance = (0.8 * total_count - present_count) / 0.2
+                delta_to_eighty = -int(required_attendance)
+            else:
+                max_missable_lectures = (present_count - 0.8 * total_count) / 0.8
+                delta_to_eighty = int(max_missable_lectures)
             out_data.append(
                 {
                     "Subject": subject,
                     "Present": present_count,
                     "Total": total_count,
                     "Percentage": percentage,
+                    "DeltaToEighty": delta_to_eighty,
                 }
             )
 

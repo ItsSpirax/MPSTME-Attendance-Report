@@ -196,24 +196,36 @@
       });
       // Attendance Report
       function renderAttendanceTable(data) {
-        const attendanceTable = document.getElementById('attendance-table');
-        attendanceTable.innerHTML = '';
-        const headerRow = attendanceTable.createTHead().insertRow();
-        ['Subject', 'Present', 'Total', 'Percentage'].forEach(text => headerRow.insertCell().textContent = text);
-        data.Attendance.Data.forEach(({
+      const attendanceTable = document.getElementById('attendance-table');
+      attendanceTable.innerHTML = '';
+
+      const headerRow = attendanceTable.createTHead().insertRow();
+      ['Subject', 'Present', 'Total', 'Percentage', '80% Attendance Adjustment'].forEach(text => {
+          const cell = headerRow.insertCell();
+          cell.textContent = text;
+          cell.style.fontWeight = 'bold';
+      });
+
+      data.Attendance.Data.forEach(({
           Subject,
           Present,
           Total,
-          Percentage
-        }) => {
+          Percentage,
+          DeltaToEighty
+      }) => {
           const row = attendanceTable.insertRow();
+
           row.insertCell().textContent = Subject;
           row.insertCell().textContent = Present;
           row.insertCell().textContent = Total;
           row.insertCell().textContent = `${Percentage}%`;
+          row.insertCell().textContent = DeltaToEighty > 0 ? `+${DeltaToEighty}` : DeltaToEighty;
+
+          // Style rows based on Percentage
           row.style.color = Percentage < 80 ? '#de0a26' : Percentage === 100 ? '#32cd32' : '#ebe8e8';
-        });
+      });
       }
+
       // Spinner
       setTimeout(() => document.getElementById('spinner')?.classList.remove('show'), 1);
       // Debounce Back to Top
