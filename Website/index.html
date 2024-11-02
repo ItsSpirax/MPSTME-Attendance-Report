@@ -91,6 +91,18 @@
                   <table class="table table-bordered table-hover" id="attendance-table"></table>
                 </div>
               </div>
+              <div class="container-fluid pt-4">
+                <div class="bg-secondary rounded h-100 p-4" style="overflow: auto;">
+                  <h6 class="mb-4">Line Chart</h6>
+                  <canvas id="line-chart" style="max-width: 100%;"></canvas>
+                </div>
+              </div>
+              <div class="container-fluid pt-4">
+                <div class="bg-secondary rounded h-100 p-4" style="overflow: auto;">
+                  <h6 class="mb-4">GitHub Graph</h6>
+                  <div id="github-graph" style="max-width: 100%; overflow: auto;"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -109,30 +121,38 @@
     </div>
     <!-- JavaScript Libraries -->
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" data-cfasync="false"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.1.0/dist/chartjs-plugin-annotation.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/cal-heatmap.min.js" defer></script>
     <script>
       const colorPalette = ['rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)', 'rgba(255, 206, 86, 0.7)', 'rgba(75, 192, 192, 0.7)', 'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)', 'rgba(201, 203, 207, 0.7)', 'rgba(255, 99, 71, 0.7)', 'rgba(0, 255, 127, 0.7)', 'rgba(255, 20, 147, 0.7)', 'rgba(0, 191, 255, 0.7)', 'rgba(75, 0, 130, 0.7)', 'rgba(173, 216, 230, 0.7)', 'rgba(240, 128, 128, 0.7)', 'rgba(124, 252, 0, 0.7)', 'rgba(255, 215, 0, 0.7)', 'rgba(255, 105, 180, 0.7)', 'rgba(135, 206, 235, 0.7)', 'rgba(255, 140, 0, 0.7)'];
       let SAPIDTimeoutId, passwordTimeoutId, lineChartInstance, widgetID;
+      // Spinner
+      setTimeout(() => document.getElementById('spinner')?.classList.remove('show'), 1);
+
       // Captcha Render
       widgetID = turnstile.ready(function() {
         turnstile.render(".cf-turnstile", {
           sitekey: "0x4AAAAAAAx-ANXhF-Birz5X",
-          "expired-callback": captchaExpired,
           theme: "dark",
-          callback: function(token) {
-            console.log(`Challenge Success ${token}`);
-          },
+          "expired-callback": captchaExpired,
         });
       });
+
       // Captcha Expired Callback
       function captchaExpired() {
         turnstile.reset(widgetID);
       }
+
       // Password Toggle
       const togglePassword = document.getElementById('password-toggle');
       togglePassword.addEventListener('click', () => {
         password.type = password.type === 'password' ? 'text' : 'password';
         togglePassword.classList.toggle('show', password.type === 'text');
       });
+
       // Submit Button
       const submitButton = document.getElementById('submit');
       document.getElementById('attendance-form').addEventListener('keypress', (event) => {
@@ -141,12 +161,14 @@
           submitButton.click();
         }
       });
+
       submitButton.addEventListener('click', async (event) => {
         event.preventDefault();
         const username = document.getElementById('sapid');
         const password = document.getElementById('password');
         const errorMessage = document.getElementById('error-message');
         const loadingMessage = document.getElementById('loading-message');
+
         if (isNaN(username.value) || username.value.length <= 4) {
           errorMessage.textContent = 'Please enter a valid SAP ID.';
           errorMessage.style.display = 'block';
@@ -162,11 +184,11 @@
           errorMessage.style.display = 'block';
           return;
         }
+
         errorMessage.textContent = '';
         errorMessage.style.display = 'none';
         submitButton.disabled = true;
-        submitButton.innerHTML = `Generating Report&nbsp;&nbsp; 
-																	
+        submitButton.innerHTML = `Generating Report&nbsp;&nbsp;
 															<div class="spinner-border spinner-border-sm" role="status"></div>`;
         loadingMessage.style.display = 'block';
         try {
@@ -184,6 +206,8 @@
           const data = await response.json();
           if (!response.ok) throw new Error(data.error || 'We couldn\'t retrieve your attendance information at this time.');
           renderAttendanceTable(data.data);
+          renderLineChart(data.data.Attendance.LineGraph);
+          renderGithubChart(data.data.Attendance.GithubGraph);
           document.getElementById('attendance-report-container').style.display = 'block';
         } catch (error) {
           errorMessage.textContent = error.message;
@@ -192,8 +216,10 @@
           submitButton.disabled = false;
           submitButton.innerHTML = 'Get Attendance';
           loadingMessage.style.display = 'none';
+          turnstile.reset(widgetID);
         }
       });
+
       // Attendance Report
       function renderAttendanceTable(data) {
         const attendanceTable = document.getElementById('attendance-table');
@@ -214,8 +240,104 @@
           row.style.color = Percentage < 80 ? '#de0a26' : Percentage === 100 ? '#32cd32' : '#ebe8e8';
         });
       }
-      // Spinner
-      setTimeout(() => document.getElementById('spinner')?.classList.remove('show'), 1);
+
+      // Line Chart
+      function renderLineChart(attendanceData) {
+        const allDatesArray = [...new Set(Object.keys(attendanceData).flatMap(subject => Object.keys(attendanceData[subject]).map(Number)))].sort((a, b) => a - b);
+        const labels = allDatesArray.map(date => new Date(date));
+        const datasets = Object.keys(attendanceData).map((subject, index) => ({
+          label: subject,
+          data: allDatesArray.map(date => attendanceData[subject][date] ?? null),
+          backgroundColor: colorPalette[index % colorPalette.length],
+          borderColor: colorPalette[index % colorPalette.length].replace(/0.7/, '1'),
+          fill: false,
+          tension: 0.4
+        }));
+        if (lineChartInstance) lineChartInstance.destroy();
+        lineChartInstance = new Chart(document.getElementById('line-chart').getContext('2d'), {
+          type: 'line',
+          data: {
+            labels,
+            datasets
+          },
+          options: {
+            responsive: true,
+            spanGaps: true,
+            scales: {
+              x: {
+                type: 'time',
+                time: {
+                  unit: 'month',
+                  displayFormats: {
+                    month: 'MMM yyyy'
+                  }
+                }
+              },
+              y: {
+                min: 0,
+                max: 100,
+                ticks: {
+                  stepSize: 10,
+                  callback: val => `${val}%`
+                }
+              }
+            },
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  title: ctx => ctx[0].label.slice(0, 12).replace(/,\s*$/, ""),
+                  label: ctx => `${ctx.dataset.label || ''}: ${ctx.raw || 0}%`
+                }
+              },
+              annotation: {
+                annotations: [{
+                  type: 'line',
+                  mode: 'horizontal',
+                  scaleID: 'y',
+                  value: 80,
+                  borderColor: 'white',
+                  borderWidth: 1,
+                  borderDash: [5, 5]
+                }]
+              }
+            }
+          }
+        });
+        lineChartInstance.data.datasets.forEach((_, idx) => {
+          if (idx !== 0) lineChartInstance.data.datasets[idx].hidden = true;
+        });
+        setTimeout(() => lineChartInstance.update(), 1000);
+      }
+
+      // GitHub Graph
+      function renderGithubChart(data) {
+        const cal = new CalHeatmap();
+        cal.paint({
+          itemSelector: '#github-graph',
+          domain: 'month',
+          subDomain: 'day',
+          data: data,
+          start: new Date(new Date().getFullYear(), 0),
+          range: 12,
+          cellSize: 20,
+          cellPadding: 5,
+          domainGutter: 10,
+          domainMargin: 10,
+          legend: [0, 20, 40, 60, 80, 100],
+          legendColors: {
+            min: '#FF0000',
+            max: '#32CD32',
+            empty: '#FFFFFF'
+          },
+          displayLegend: true,
+          legendVerticalPosition: 'center',
+          legendHorizontalPosition: 'right',
+          legendOrientation: 'vertical',
+          legendCellSize: 15,
+          tooltip: true,
+        });
+      }
+      
       // Debounce Back to Top
       const debounce = (func, delay) => {
         let timeout;
@@ -224,6 +346,7 @@
           timeout = setTimeout(() => func.apply(this, args), delay);
         };
       };
+
       const handleScroll = debounce(() => {
         document.querySelector('.back-to-top').style.display = window.scrollY > 300 ? 'block' : 'none';
       }, 300);
