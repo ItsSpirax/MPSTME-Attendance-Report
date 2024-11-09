@@ -56,10 +56,9 @@ SEMESTER_MAP = {
 SUBJECT_CODE_REGEX = re.compile(r"P\d|U\d|T\d")
 
 SVKM_URLS = {
-    "attendance": "https://portal.svkm.ac.in/MPSTME-NM-M/viewDailyAttendanceByStudent",
     "branch_select": "https://portal.svkm.ac.in/usermgmt/",
-    "feedback": "https://portal.svkm.ac.in/MPSTME-NM-M/viewFeedbackDetails",
-    "home": "https://portal.svkm.ac.in/MPSTME-NM-M/homepage",
+    "home": r"https://portal\.svkm\.ac\.in/.*/(viewFeedbackDetails|homepage)",
+    "college": r"https://portal\.svkm\.ac\.in/(.+)/",
     "login": "https://portal.svkm.ac.in/usermgmt/login",
 }
 
@@ -117,11 +116,11 @@ def validate_request(request):
     return username, password
 
 
-def log(ua, start_time, error="None"):
+def log(ua, start_time, error="None", college_name="None"):
     """Logs the message with a timestamp."""
     try:
         requests.get(
-            f"{os.environ["LOGGING_URL"]}?ua={ua}&time={str(datetime.now() - start_time)}&error={error}",
+            f"{os.environ["LOGGING_URL"]}?ua={ua}&time={str(datetime.now() - start_time)}&error={error}&college={college_name}",
             timeout=0.5,
         )
     except:
@@ -312,6 +311,7 @@ def generate_report(soup):
 def get_attendance(username, password):
     """Fetches attendance by logging in and parsing the attendance page."""
     s = requests.Session()
+    college_name = None
     try:
         # Login request
         login_data = {
@@ -346,13 +346,15 @@ def get_attendance(username, password):
                 r.raise_for_status()
 
         # Final check for successful login
-        if r.url != SVKM_URLS["home"] and r.url != SVKM_URLS["feedback"]:
+        if re.match(SVKM_URLS["home"], r.url) is None:
             raise RuntimeError(
                 f"(RE-1) An error occurred during login. {r.url} : {r.status_code}"
             )
 
+        college_name = re.match(SVKM_URLS["college"], r.url).group(1)
+
         # Navigate to attendance page
-        response = s.get(SVKM_URLS["attendance"])
+        response = s.get(f"https://portal.svkm.ac.in/{college_name}/viewDailyAttendanceByStudent")
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "lxml")
 
@@ -372,7 +374,7 @@ def get_attendance(username, password):
     finally:
         s.close()
 
-    return generate_report(soup)
+    return [generate_report(soup), college_name]
 
 
 # Route to redirect to homepage
@@ -394,8 +396,8 @@ def attendance():
     try:
         turnstile_verify(request)
         username, password = validate_request(request)
-        attendance = get_attendance(username, password)
-        log(request.headers.get("User-Agent"), start_time)
+        attendance, college_name = get_attendance(username, password)
+        log(request.headers.get("User-Agent"), start_time, "None", college_name)
         return jsonify({"message": "Success", "data": attendance})
 
     except ValueError as ve:

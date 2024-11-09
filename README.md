@@ -1,6 +1,6 @@
 # MPSTME Attendance Report
 
-This repository contains the code for a web application that allows MPSTME students to easily check their attendance records. The application fetches attendance data from the SVKM portal and displays it in a user-friendly format.
+This repository contains the code for a web application that allows NMIMS students to easily check their attendance records. The application fetches attendance data from the SVKM portal and displays it in a user-friendly format.
 
 **Note:** This project is for educational purposes only. Use it responsibly and at your own risk.
 
@@ -9,7 +9,7 @@ This repository contains the code for a web application that allows MPSTME stude
 * Fetches attendance data from the SVKM portal.
 * Displays attendance summary with subject-wise breakdown.
 * Encrypts user credentials before sending them to the backend.
-* Does not store user credentials or attendance data. Logs user agent and errors only for debugging purposes.
+* Does not store user credentials or attendance data. Logs user agent, college name and errors only for debugging purposes.
 * Uses Cloudflare Turnstile for bot protection.
 * Simple and easy-to-use interface.
 
