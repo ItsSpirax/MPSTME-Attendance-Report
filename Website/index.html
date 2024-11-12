@@ -97,6 +97,14 @@
           <div class="col-12 col-md-10 col-xl-8">
             <div class="container-fluid pt-4">
               <div class="bg-secondary rounded h-100 p-4" style="overflow-x: auto;">
+                <h6 class="mb-4 text-center">User Details</h6>
+                <table class="table" id="user-details">
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="container-fluid pt-4">
+              <div class="bg-secondary rounded h-100 p-4" style="overflow-x: auto;">
                 <h6 class="mb-4">Attendance Report</h6>
                 <table class="table table-bordered table-hover" id="attendance-table">
                   <thead>
@@ -207,6 +215,7 @@
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'We couldn\'t retrieve your attendance information at this time.');
+        displayUserDetails(data.data);
         renderAttendanceTable(data.data);
         document.getElementById('attendance-report-container').style.display = 'block';
       } catch (error) {
@@ -219,6 +228,43 @@
         turnstile.reset(widgetID);
       }
     });
+
+    function displayUserDetails(data) {
+      const userDetailsTable = document.querySelector('#user-details tbody');
+      userDetailsTable.innerHTML = `
+                <thead>
+                  <tr>
+                    <td colspan="2">
+                      <strong style="color: white;">Name:</strong>
+                      <br>${data.Name || 'N/A'}
+                    </td>
+                    <td colspan="2">
+                      <strong style="color: white;">SAP ID:</strong>
+                      <br>${data.SapID || 'N/A'}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="2">
+                      <strong style="color: white;">Program:</strong>
+                      <br>${data.Program || 'N/A'}
+                    </td>
+                    <td colspan="2">
+                      <strong style="color: white;">Roll No:</strong>
+                      <br>${data.RollNo || 'N/A'}
+                    </td>
+                  <tr>
+                  <tr>
+                    <td colspan="2">
+                      <strong style="color: white;">Semester:</strong>
+                      <br>${data.Semester || 'N/A'}
+                    </td>
+                    <td colspan="2">
+                      <strong style="color: white;">Time:</strong>
+                      <br>${data.Attendance.Range || 'N/A'}
+                  </td>
+                </thead>
+              `;
+    }
 
     function renderAttendanceTable(data) {
       const attendanceTableBody = document.querySelector('#attendance-table tbody');
