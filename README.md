@@ -48,6 +48,7 @@ This repository contains the code for a web application that allows NMIMS studen
     <br></br>
     ```
     TURNSTILE_SECRET = your_turnstile_secret
+    WEBSITE_URL = your_website_url
     LOGGING_URL = your_logging_url
     ```
 

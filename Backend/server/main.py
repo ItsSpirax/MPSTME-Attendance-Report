@@ -1,3 +1,26 @@
+"""
+Developed by Adith
+GitHub Repository: https://github.com/ItsSpirax/MPSTME-Attendance-Report
+
+Description:
+This Flask application facilitates the retrieval and analysis of attendance 
+data from the SVKM portal. It provides users with detailed attendance 
+reports, including subject-wise statistics, low-attendance warnings, and 
+data visualization-friendly formats such as line graphs and GitHub-style 
+activity heatmaps.
+
+Key Features:
+- Secure credential handling using RSA encryption.
+- Captcha validation using Cloudflare Turnstile.
+- Subject standardization and semester-specific data filtering.
+- Attendance percentage analysis with actionable insights 
+  (e.g., low-attendance deltas).
+
+License:
+MIT License - Open source and available for use under the terms 
+specified in the license.
+"""
+
 import base64
 import difflib
 import json
@@ -64,20 +87,22 @@ SVKM_URLS = {
 
 
 # Helper functions
-def turnstile_verify(request):
+def turnstile_verify(req):
     """Verifies the Cloudflare Turnstile captcha response."""
-    if "captcha" not in request.json:
+    if "captcha" not in req.json:
         raise ValueError("(VE-7) Missing captcha response. Please try again.")
 
     data = {
         "secret": os.environ["TURNSTILE_SECRET"],
-        "response": request.json["captcha"],
-        "remoteip": request.headers.get("Cf-Connecting-Ip"),
+        "response": req.json["captcha"],
+        "remoteip": req.headers.get("Cf-Connecting-Ip"),
     }
 
     try:
         response = requests.post(
-            "https://challenges.cloudflare.com/turnstile/v0/siteverify", data=data
+            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+            data=data,
+            timeout=10,
         )
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
@@ -90,6 +115,7 @@ def turnstile_verify(request):
 
 
 def encrypt_message(message):
+    """Encrypts the message using the public key."""
     encoded_message = message.encode("utf-8")
     ciphertext = PUBLIC_KEY.encrypt(
         encoded_message,
@@ -102,10 +128,10 @@ def encrypt_message(message):
     return base64.b64encode(ciphertext).decode("utf-8")
 
 
-def validate_request(request):
+def validate_request(req):
     """Validates the incoming request for required fields."""
-    username = request.json.get("username")
-    password = request.json.get("password")
+    username = req.json.get("username")
+    password = req.json.get("password")
 
     if not username or not password:
         raise ValueError("(VE-1) Missing username or password.")
@@ -116,14 +142,18 @@ def validate_request(request):
     return username, password
 
 
-def log(ua, start_time, error="None", college_name="None"):
+def log(ua, start_time, error="None"):
     """Logs the message with a timestamp."""
     try:
+        log_url = os.environ["LOGGING_URL"]
+        if not log_url:
+            return
+        time_taken = str(datetime.now() - start_time)
         requests.get(
-            f"{os.environ["LOGGING_URL"]}?ua={ua}&time={str(datetime.now() - start_time)}&error={error}&college={college_name}",
+            f"{log_url}?ua={ua}&time={time_taken}&error={error}",
             timeout=0.5,
         )
-    except:
+    except Exception:
         pass
 
 
@@ -132,11 +162,14 @@ def get_user_details(soup):
     """Extracts user details from BeautifulSoup parsed HTML content."""
     try:
         user_details = soup.find_all("div", class_="form-group")
-        name = user_details[0].text.split(":")[1].strip().title()
-        roll_no = user_details[3].text.split(":")[1].strip()
-        program = user_details[1].text.split(":")[1].split("-")[0].strip().title()
-        semester = SEMESTER_MAP[user_details[2].text.split(":")[1].strip().split()[1]]
-        return name, roll_no, program, semester
+        return (
+            user_details[0].text.split(":")[1].strip().title(),  # Name
+            user_details[3].text.split(":")[1].strip(),  # Roll No
+            user_details[1].text.split(":")[1].split("-")[0].strip().title(),  # Program
+            SEMESTER_MAP[
+                user_details[2].text.split(":")[1].strip().split()[1]
+            ],  # Semester
+        )
     except Exception as e:
         raise ValueError(f"(VE-4) Failed to extract user details: {e}") from e
 
@@ -145,7 +178,6 @@ def get_attendance_df(soup, semester):
     """Converts attendance data from HTML into a DataFrame."""
     try:
         attendance_list = soup.select("div.studAttList tbody tr")
-        sapid = attendance_list[0].find_all("td")[1].text
 
         # Parse attendance entries
         rows = []
@@ -200,7 +232,10 @@ def get_attendance_df(soup, semester):
                 else x
             )
         )
-        return attendance_df.sort_values(by="Date"), sapid
+        return (
+            attendance_df.sort_values(by="Date"),
+            attendance_list[0].find_all("td")[1].text,
+        )
 
     except Exception as e:
         raise ValueError(f"(VE-5) Failed to extract attendance data: {e}") from e
@@ -223,8 +258,8 @@ def generate_report(soup):
             )
             percentage = round((present_count / total_count) * 100, 2)
             if percentage < 80:
-                delta_to_eighty = -math.ceil((
-                    round(0.8 * total_count, 2) - present_count) / 0.2
+                delta_to_eighty = -math.ceil(
+                    (round(0.8 * total_count, 2) - present_count) / 0.2
                 )
             else:
                 delta_to_eighty = math.floor(
@@ -300,6 +335,7 @@ def generate_report(soup):
             "Attendance": {
                 "Range": date_range,
                 "Data": out_data,
+                "RawData": attendance_df.to_dict(orient="records"),
                 "LineGraph": line_graph_data,
                 "GithubGraph": github_graph_data,
             },
@@ -311,7 +347,6 @@ def generate_report(soup):
 def get_attendance(username, password):
     """Fetches attendance by logging in and parsing the attendance page."""
     s = requests.Session()
-    college_name = None
     try:
         # Login request
         login_data = {
@@ -352,21 +387,27 @@ def get_attendance(username, password):
             )
 
         college_name = re.match(SVKM_URLS["college"], r.url).group(1)
+        if college_name != "MPSTME-NM-M":
+            raise ValueError(
+                f"(VE-10) Unsupported College: {college_name}. To request support, please submit an issue on our GitHub repository."
+            )
 
         # Navigate to attendance page
-        response = s.get(f"https://portal.svkm.ac.in/{college_name}/viewDailyAttendanceByStudent")
+        response = s.get(
+            f"https://portal.svkm.ac.in/{college_name}/viewDailyAttendanceByStudent"
+        )
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "lxml")
 
-    except requests.exceptions.Timeout:
+    except requests.exceptions.Timeout as e:
         raise ConnectionError(
             "(CE-1) The SVKM portal is taking too long to respond. It might be down. Please try again later."
-        )
+        ) from e
 
-    except requests.exceptions.ConnectionError:
+    except requests.exceptions.ConnectionError as e:
         raise ConnectionError(
             "(CE-2) Unable to connect to the SVKM portal. Please try again later."
-        )
+        ) from e
 
     except requests.exceptions.HTTPError as e:
         raise ConnectionError(f"(CE-3) The SVKM portal returned an error: {e}") from e
@@ -374,18 +415,18 @@ def get_attendance(username, password):
     finally:
         s.close()
 
-    return [generate_report(soup), college_name]
+    return generate_report(soup)
 
 
-# Route to redirect to homepage
 @app.route("/", methods=["GET"])
 def home():
-    return redirect("https://attn.spirax.me/", code=301)
+    """Redirects to the homepage."""
+    return redirect(os.environ["WEBSITE_URL"], code=301)
 
 
-# Route to handle attendance report request
 @app.route("/v1/getAttendanceReport", methods=["POST"])
 def attendance():
+    """Handles the attendance report request."""
 
     # Website sends a ping request onload to warm up the function
     if request.args.get("ping") == "true":
@@ -396,22 +437,22 @@ def attendance():
     try:
         turnstile_verify(request)
         username, password = validate_request(request)
-        attendance, college_name = get_attendance(username, password)
-        log(request.headers.get("User-Agent"), start_time, "None", college_name)
-        return jsonify({"message": "Success", "data": attendance})
+        data = get_attendance(username, password)
+        log(request.headers.get("User-Agent"), start_time, "None")
+        return jsonify({"message": "Success", "data": data})
 
-    except ValueError as ve:
-        log(request.headers.get("User-Agent"), start_time, str(ve))
-        return jsonify({"error": str(ve)}), 400
+    except ValueError as value_err:
+        log(request.headers.get("User-Agent"), start_time, str(value_err))
+        return jsonify({"error": str(value_err)}), 400
 
-    except ConnectionError as ce:
-        log(request.headers.get("User-Agent"), start_time, str(ce))
-        return jsonify({"error": str(ce)}), 503
+    except ConnectionError as connection_err:
+        log(request.headers.get("User-Agent"), start_time, str(connection_err))
+        return jsonify({"error": str(connection_err)}), 503
 
-    except RuntimeError as re:
-        log(request.headers.get("User-Agent"), start_time, str(re))
-        return jsonify({"error": str(re)}), 500
+    except RuntimeError as runtime_err:
+        log(request.headers.get("User-Agent"), start_time, str(runtime_err))
+        return jsonify({"error": str(runtime_err)}), 500
 
-    except Exception as e:
-        log(request.headers.get("User-Agent"), start_time, str(e))
-        return jsonify({"error": f"(GE-1) An unexpected error occurred: {e}"}), 500
+    except Exception as err:
+        log(request.headers.get("User-Agent"), start_time, str(err))
+        return jsonify({"error": f"(GE-1) An unexpected error occurred: {err}"}), 500
