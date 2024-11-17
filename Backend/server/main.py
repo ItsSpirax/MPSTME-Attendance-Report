@@ -39,6 +39,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding as crypto_padding
 from flask import Flask, request, redirect, jsonify
 from flask_cors import CORS
+from num2words import num2words
 
 
 # Initializing Flask app
@@ -182,12 +183,12 @@ def fun_fact(attendance_df):
     if attendance_df.empty:
         return "Uh-oh! Looks like you've missed all the classes this semester. Better luck next time!"
 
-    if (attendance_df["Date"].max() - attendance_df["Date"].min()).days < 30:
-        return "Looks like your semester was really short! We'll need a bit more data to give you a fun fact!"
-
     if attendance_df.shape[0] < 3:
         return "Just getting started? Your attendance is looking good, but let's see how it improves over time!"
 
+    if (attendance_df["Date"].max() - attendance_df["Date"].min()).days < 30:
+        return "Looks like your semester was really short! We'll need a bit more data to give you a fun fact!"
+    
     try:
         rand = random.randint(0, 7)
 
@@ -211,7 +212,7 @@ def fun_fact(attendance_df):
 
         if rand == 1:
             date = attendance_df["Date"].dt.date.value_counts().idxmax()
-            return f"📅 Looks like {date.strftime('%d %B')} was your busiest day! You attended {attendance_df[attendance_df['Date'] == date].shape[0]} hours of lectures. Phew, that's a lot of learning!"
+            return f"📅 Looks like {date.strftime('%d %B')} was your busiest day! You attended {attendance_df[attendance_df['Date'].dt.date == date].shape[0]} hours of lectures. Phew, that's a lot of learning!"
 
         if rand == 2:
             ratio = spent_in_lec / total_hours_in_sem_months
@@ -232,19 +233,21 @@ def fun_fact(attendance_df):
 
         if rand == 4:
             runtimes = {
-                "Star Wars Series": 26,
-                "Harry Potter Series": 19,
-                "Lord of the Rings ": 9,
-                "X-Men Series": 22,
+                "the Star Wars movies": 26,
+                "the Harry Potter series ": 19,
+                "the LOTR movies": 9,
+                "the X-Men franchise": 22,
                 "Suits": 83,
                 "Breaking Bad": 62,
                 "Game of Thrones": 70,
                 "The Office": 99,
+                "Friends": 89,
+                "Stranger Things": 35,
             }
             rand_series = random.choice(list(runtimes.keys()))
             if spent_in_lec // runtimes[rand_series] == 0:
                 return f"😱 You’ve spent so much time in class, you couldn’t even watch {rand_series} once! Time to cut back on lectures... just kidding!"
-            return f"🎬 You could have binge-watched {rand_series} {spent_in_lec // runtimes[rand_series]} times with the hours you've spent in class. That’s some serious classroom dedication!"
+            return f"🎬 You could have binge-watched {rand_series} {str(num2words(spent_in_lec // runtimes[rand_series])).title()} times with the hours you've spent in class. That’s some serious classroom dedication!"
 
         if rand == 5:
             time_taken = {
@@ -252,11 +255,14 @@ def fun_fact(attendance_df):
                 "Mumbai to Delhi": 25,
                 "Mumbai to Bangalore": 18,
                 "Mumbai to Pune": 3,
+                "Mumbai to Goa": 12,
+                "Mumbai to Ahmedabad": 10,
+                "Mumbai to Jaipur": 21,
             }
             rand_trip = random.choice(list(time_taken.keys()))
             if spent_in_lec < time_taken[rand_trip]:
                 return f"🚗 You haven’t even spent enough time in class to drive from {rand_trip}. Maybe next semester!"
-            return f"🌍 In the time you’ve spent in class, you could have driven from {rand_trip} {spent_in_lec // time_taken[rand_trip]} times. Road trip, anyone?"
+            return f"🌍 In the time you’ve spent in class, you could have driven from {rand_trip} {str(num2words(spent_in_lec // time_taken[rand_trip])).title()} times. Road trip, anyone?"
 
         if rand == 6:
             if spent_in_lec < 24:
@@ -275,7 +281,7 @@ def fun_fact(attendance_df):
             if spent_in_lec < time_to_moon:
                 time_left = time_to_moon - spent_in_lec
                 return f"🌕 You’ve spent {spent_in_lec} hours in class. You're only {time_left} hours away from the moon. Almost there!"
-            return f"🚀 You’ve spent {spent_in_lec} hours in class. In fact, you could have traveled to the moon {spent_in_lec // time_to_moon} times! Astronaut-level attendance!"
+            return f"🚀 You’ve spent {spent_in_lec} hours in class. In fact, you could have traveled to the moon {str(num2words(spent_in_lec // time_to_moon)).title()} times! Astronaut-level attendance!"
     except Exception as e:
         return f"🎉 You're doing great! Keep up the good work!"
 
@@ -301,14 +307,14 @@ def get_attendance_df(soup, semester):
 
         last_date = attendance_df["Date"].max()
         start_date = (
-            datetime(last_date.year, 6, 15)
+            datetime(last_date.year, 7, 1)
             if semester in ["First", "Third", "Fifth", "Seventh", "Ninth", "Eleventh"]
             else datetime(last_date.year, 1, 1)
         )
         end_date = (
             datetime(last_date.year, 12, 31)
-            if start_date.month == 6
-            else datetime(last_date.year, 6, 14)
+            if start_date.month == 7
+            else datetime(last_date.year, 6, 30)
         )
         attendance_df = attendance_df[
             (attendance_df["Date"] >= start_date) & (attendance_df["Date"] <= end_date)
@@ -341,6 +347,8 @@ def get_attendance_df(soup, semester):
         return (
             attendance_df.sort_values(by="Date"),
             attendance_list[0].find_all("td")[1].text,
+            start_date,
+            end_date,
         )
 
     except Exception as e:
@@ -350,7 +358,7 @@ def get_attendance_df(soup, semester):
 def generate_report(soup):
     """Generates attendance summary."""
     name, roll_no, program, semester = get_user_details(soup)
-    attendance_df, sap_id = get_attendance_df(soup, semester)
+    attendance_df, sap_id, start_date, end_date = get_attendance_df(soup, semester)
 
     try:
         # Build attendance summary
@@ -411,15 +419,18 @@ def generate_report(soup):
             "SapID": sap_id,
             "RollNo": roll_no,
             "Program": program,
-            "Semester": semester,
+            "Semester": {
+                "Name": semester,
+                "Start": start_date.strftime("%m-%d-%Y"),
+                "End": end_date.strftime("%m-%d-%Y"),
+            },
             "Attendance": {
                 "FunFact": fun_fact(attendance_df.copy()),
                 "Range": date_range,
                 "Data": out_data,
-                "RawCSV": [attendance_df.to_csv()],
+                "RawCSV": attendance_df.to_csv(index=False),
                 "GithubHeatmap": github_heatmap_data,
             },
-            
         }
     except Exception as e:
         raise ValueError(f"(VE-6) Failed to generate attendance report: {e}") from e
@@ -470,7 +481,7 @@ def get_attendance(username, password):
         college_name = re.match(SVKM_URLS["college"], r.url).group(1)
         if college_name != "MPSTME-NM-M":
             raise ValueError(
-                f"(VE-10) Unsupported College: {college_name}. To request support, please submit an issue on our GitHub repository."
+                f"(VE-10) Unsupported College: {college_name}. This service is only available for MPSTME students."
             )
 
         # Navigate to attendance page

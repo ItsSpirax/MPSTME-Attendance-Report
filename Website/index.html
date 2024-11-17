@@ -20,12 +20,13 @@
   <link rel="stylesheet" href="/css/style.min.css">
   <!-- Warms up Server -->
   <script>
-    fetch('https://attendance-backend.spirax.me/v1/getAttendanceReport?ping=true', {
+    fetch('https://report-api.adith.tech/v1/getAttendanceReport?ping=true', {
       method: 'POST'
     });
   </script>
 </head>
 <!-- Body Start -->
+
 <body>
   <div class="container-fluid position-relative d-flex p-0" style="min-height: 100vh; flex-direction: column;">
     <!-- Spinner Start -->
@@ -120,10 +121,16 @@
                 </table>
               </div>
             </div>
+            <div class="container-fluid pt-4">
+              <div class="bg-secondary rounded h-100 p-4" style="overflow-x: auto;">
+                <h6 class="mb-4 text-center">Attendance Chart</h6>
+                <div id="attendance-heatmap" style="max-width: 100%; overflow: auto; margin: 0 auto;"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      
+
       <!-- Attendance Report Container End -->
       <!-- Footer Start -->
       <footer class="bg-dark text-center py-3" style="position: sticky; bottom: 0; width: 100%;"> &copy; <a
@@ -142,6 +149,12 @@
   </div>
   <!-- JavaScript Libraries -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" data-cfasync="false"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/cal-heatmap.min.js" defer></script>
+  <script src=" https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js "></script>
+  <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/plugins/Tooltip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/plugins/LegendLite.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/plugins/CalendarLabel.min.js"></script>
   <script>
     const colorPalette = ['rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)', 'rgba(255, 206, 86, 0.7)', 'rgba(75, 192, 192, 0.7)', 'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)', 'rgba(201, 203, 207, 0.7)', 'rgba(255, 99, 71, 0.7)', 'rgba(0, 255, 127, 0.7)', 'rgba(255, 20, 147, 0.7)', 'rgba(0, 191, 255, 0.7)', 'rgba(75, 0, 130, 0.7)', 'rgba(173, 216, 230, 0.7)', 'rgba(240, 128, 128, 0.7)', 'rgba(124, 252, 0, 0.7)', 'rgba(255, 215, 0, 0.7)', 'rgba(255, 105, 180, 0.7)', 'rgba(135, 206, 235, 0.7)', 'rgba(255, 140, 0, 0.7)'];
     let SAPIDTimeoutId, passwordTimeoutId, widgetID;
@@ -202,7 +215,7 @@
       submitButton.innerHTML = `Generating Report&nbsp;&nbsp;<div class="spinner-border spinner-border-sm" role="status"></div>`;
       loadingMessage.style.display = 'block';
       try {
-        const response = await fetch('https://attendance-backend.spirax.me/v1/getAttendanceReport', {
+        const response = await fetch('https://report-api.adith.tech/v1/getAttendanceReport', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -217,6 +230,7 @@
         if (!response.ok) throw new Error(data.error || 'We couldn\'t retrieve your attendance information at this time.');
         displayUserDetails(data.data);
         renderAttendanceTable(data.data);
+        renderGithubChart(data.data.Attendance.GithubHeatmap, new Date(data.data.Semester.Start));
         document.getElementById('attendance-report-container').style.display = 'block';
       } catch (error) {
         errorMessage.textContent = error.message;
@@ -256,7 +270,7 @@
                   <tr>
                     <td colspan="2">
                       <strong style="color: white;">Semester:</strong>
-                      <br>${data.Semester || 'N/A'}
+                      <br>${data.Semester.Name || 'N/A'}
                     </td>
                     <td colspan="2">
                       <strong style="color: white;">Time:</strong>
@@ -315,6 +329,64 @@
         medicalCell.appendChild(medicalInput);
         row.style.color = Percentage < 80 ? '#de0a26' : Percentage === 100 ? '#32cd32' : '#ebe8e8';
       });
+    }
+    // GitHub Graph
+    function renderGithubChart(data, startDate) {
+      document.getElementById('attendance-heatmap').innerHTML = '';
+      const cal = new CalHeatmap();
+
+      const formattedData = Object.entries(data).map(([timestamp, value]) => ({
+        date: new Date(Number(timestamp)),
+        value: value,
+      }));
+
+      cal.paint({
+        data: {
+          source: formattedData,
+          x: 'date',
+          y: 'value',
+        },
+        date: { start: new Date(startDate.setMonth(startDate.getMonth() + 1)) },
+        range: 6,
+        scale: {
+          color: {
+            type: 'threshold',
+            range: ['#14432a', '#166b34', '#37a446', '#4dd05a'],
+            domain: [0, 2, 4, 6],
+          },
+        },
+        domain: {
+          type: 'month',
+          gutter: 4,
+          label: { text: 'MMM', textAlign: 'start', position: 'top' },
+        },
+        subDomain: { type: 'ghDay', radius: 2, width: 11, height: 11, gutter: 4 },
+        itemSelector: '#attendance-heatmap',
+      },
+        [
+          [
+            Tooltip,
+            {
+              text: function (date, value, dayjsDate) {
+                return (
+                  (value ? value : 'No') +
+                  ' lectures on ' +
+                  dayjsDate.format('dddd, MMMM D, YYYY')
+                );
+              },
+            },
+          ],
+          [
+            CalendarLabel,
+            {
+              width: 30,
+              textAlign: 'start',
+              text: () => dayjs.weekdaysShort().map((d, i) => (i % 2 == 0 ? '' : d)),
+              padding: [25, 0, 0, 0],
+            },
+          ],
+        ]
+      );
     }
     // Debounce Back to Top
     const debounce = (func, delay) => {

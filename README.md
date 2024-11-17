@@ -1,17 +1,22 @@
 # MPSTME Attendance Report
 
-This repository contains the code for a web application that allows NMIMS students to easily check their attendance records. The application fetches attendance data from the SVKM portal and displays it in a user-friendly format.
+This repository contains the code for a web application that allows NMIMS students to easily check their latest attendance records. The application fetches attendance data from the SVKM portal and displays it in a user-friendly format.
 
 **Note:** This project is for educational purposes only. Use it responsibly and at your own risk.
 
+#### Try it out: [https://report.adith.tech](https://report.adith.tech)
+
 ## Features
 
-* Fetches attendance data from the SVKM portal.
-* Displays attendance summary with subject-wise breakdown.
+* Fetches up to date attendance data from the SVKM portal.
+* Displays attendance summary with subject-wise breakdown and graphical representation.
 * Encrypts user credentials before sending them to the backend.
 * Does not store user credentials or attendance data. Logs user agent, college name and errors only for debugging purposes.
-* Uses Cloudflare Turnstile for bot protection.
 * Simple and easy-to-use interface.
+
+## Demo
+
+![Attendance Report](assets/report.png)
 
 ## How it Works
 
