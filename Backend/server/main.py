@@ -188,7 +188,7 @@ def fun_fact(attendance_df):
 
     if (attendance_df["Date"].max() - attendance_df["Date"].min()).days < 30:
         return "Looks like your semester was really short! We'll need a bit more data to give you a fun fact!"
-    
+
     try:
         rand = random.randint(0, 7)
 
@@ -202,13 +202,14 @@ def fun_fact(attendance_df):
             streak = 1
             max_streak = 1
             attendance_df["Date"] = attendance_df["Date"].dt.date
+            attendance_df = attendance_df.sort_values("Date").reset_index(drop=True)
             for i in range(1, attendance_df.shape[0]):
-                if attendance_df.iloc[i - 1]["Date"] == attendance_df.iloc[i]["Date"]:
+                if (attendance_df.iloc[i]["Date"] - attendance_df.iloc[i - 1]["Date"]).days == 1:
                     streak += 1
                     max_streak = max(max_streak, streak)
                 else:
                     streak = 1
-            return f"🎉 Wow! Your longest streak of attendance is {max_streak} days. You're on fire! Keep that momentum going!"
+            print(f"🎉 Wow! Your longest streak of attendance is {max_streak} days. You're on fire! Keep that momentum going!")
 
         if rand == 1:
             date = attendance_df["Date"].dt.date.value_counts().idxmax()
@@ -348,7 +349,6 @@ def get_attendance_df(soup, semester):
             attendance_df.sort_values(by="Date"),
             attendance_list[0].find_all("td")[1].text,
             start_date,
-            end_date,
         )
 
     except Exception as e:
@@ -358,7 +358,7 @@ def get_attendance_df(soup, semester):
 def generate_report(soup):
     """Generates attendance summary."""
     name, roll_no, program, semester = get_user_details(soup)
-    attendance_df, sap_id, start_date, end_date = get_attendance_df(soup, semester)
+    attendance_df, sap_id, start_date = get_attendance_df(soup, semester)
 
     try:
         # Build attendance summary
@@ -390,7 +390,7 @@ def generate_report(soup):
             )
 
         # Build GitHub graph data
-        github_heatmap_data = (
+        attendance_heatmap_data = (
             attendance_df.drop(columns=["Subject"])
             .assign(Date=pd.to_datetime(attendance_df["Date"]).dt.date)
             .groupby("Date", as_index=False)
@@ -398,13 +398,13 @@ def generate_report(soup):
             .loc[lambda df: df["Present"] != 0]
         )
 
-        if github_heatmap_data.empty:
-            github_heatmap_data = {}
+        if attendance_heatmap_data.empty:
+            attendance_heatmap_data = {}
         else:
-            github_heatmap_data = {
+            attendance_heatmap_data = {
                 int(pd.Timestamp(date).timestamp() * 1000): int(count)
                 for date, count in zip(
-                    github_heatmap_data["Date"], github_heatmap_data["Present"]
+                    attendance_heatmap_data["Date"], attendance_heatmap_data["Present"]
                 )
             }
 
@@ -422,14 +422,13 @@ def generate_report(soup):
             "Semester": {
                 "Name": semester,
                 "Start": start_date.strftime("%m-%d-%Y"),
-                "End": end_date.strftime("%m-%d-%Y"),
             },
             "Attendance": {
                 "FunFact": fun_fact(attendance_df.copy()),
                 "Range": date_range,
                 "Data": out_data,
                 "RawCSV": attendance_df.to_csv(index=False),
-                "GithubHeatmap": github_heatmap_data,
+                "Heatmap": attendance_heatmap_data,
             },
         }
     except Exception as e:

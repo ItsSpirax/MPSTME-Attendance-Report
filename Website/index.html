@@ -2,30 +2,25 @@
 <html lang="en">
 
 <head>
-  <!-- Meta Tags -->
   <meta charset="UTF-8">
   <title>MPSTME | Attendance</title>
   <meta name="description" content="Check your latest attendance records here.">
   <meta name="keywords" content="MPSTME, NMIMS, SVKM, Attendance, Report">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="favicon.ico" rel="icon">
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload"
     href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@500;700&display=swap"
     as="style">
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@500;700&display=swap">
-  <!-- Stylesheet -->
   <link rel="stylesheet" href="/css/style.min.css">
-  <!-- Warms up Server -->
   <script>
     fetch('https://report-api.adith.tech/v1/getAttendanceReport?ping=true', {
       method: 'POST'
     });
   </script>
 </head>
-<!-- Body Start -->
 
 <body>
   <div class="container-fluid position-relative d-flex p-0" style="min-height: 100vh; flex-direction: column;">
@@ -37,6 +32,7 @@
       </div>
     </div>
     <!-- Spinner End -->
+
     <!-- Content Start -->
     <div class="content" style="flex: 1;">
       <!-- Navbar Start -->
@@ -56,6 +52,7 @@
         </div>
       </nav>
       <!-- Navbar End -->
+
       <!-- Login Container Start -->
       <div class="container-fluid pt-4 px-4">
         <div class="row justify-content-center">
@@ -91,6 +88,7 @@
         </div>
       </div>
       <!-- Login Container End -->
+
       <!-- Attendance Report Container Start -->
       <div class="pt-2 pb-5" id="attendance-report-container" style="display: none;">
         <div class="row justify-content-center">
@@ -105,7 +103,10 @@
             </div>
             <div class="container-fluid pt-4">
               <div class="bg-secondary rounded h-100 p-4" style="overflow-x: auto;">
-                <h6 class="mb-4 text-center">Attendance Report</h6>
+                <h6 class="mb-0 text-center w-100">Attendance Report</h6>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <button class="btn btn-primary btn-sm ms-auto" id="download-csv">Download CSV</button>
+                </div>
                 <table class="table table-bordered table-hover" id="attendance-table">
                   <thead>
                     <tr>
@@ -119,26 +120,32 @@
                   </thead>
                   <tbody></tbody>
                 </table>
+                <div class="text-center mt-4">
+                  <p id="funfact" class="text-muted" style="font-size: 0.875rem;"></p>
+                </div>
               </div>
             </div>
-            <div class="container-fluid pt-4">
-              <div class="bg-secondary rounded h-100 p-4" style="overflow-x: auto;">
+
+            <div class="container-fluid pt-4 pb-4">
+              <div class="bg-dark rounded h-100 p-4" style="overflow-x: auto;">
                 <h6 class="mb-4 text-center">Attendance Chart</h6>
-                <div id="attendance-heatmap" style="max-width: 100%; overflow: auto; margin: 0 auto;"></div>
+                <div class="d-flex justify-content-center">
+                  <div id="attendance-heatmap" style="max-width: 100%;"></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-
       <!-- Attendance Report Container End -->
+
       <!-- Footer Start -->
-      <footer class="bg-dark text-center py-3" style="position: sticky; bottom: 0; width: 100%;"> &copy; <a
-          rel="noopener" href="https://github.com/ItsSpirax">Adith</a>, All Rights Reserved. </footer>
+      <footer class="bg-dark text-center py-3" style="position: sticky; bottom: 0; width: 100%;">
+        &copy; <a rel="noopener" href="https://github.com/ItsSpirax">Adith</a>, All Rights Reserved.
+      </footer>
       <!-- Footer End -->
     </div>
-    <!-- Content End -->
-    <!-- Back to Top -->
+
     <a href="#top" class="btn btn-lg btn-primary btn-lg-square back-to-top" aria-label="Back to Top">
       <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" class="bi bi-arrow-up"
         viewBox="0 0 16 16">
@@ -147,20 +154,17 @@
       </svg>
     </a>
   </div>
-  <!-- JavaScript Libraries -->
+
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" data-cfasync="false"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/cal-heatmap.min.js" defer></script>
   <script src=" https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js "></script>
   <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/plugins/Tooltip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/plugins/LegendLite.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/plugins/CalendarLabel.min.js"></script>
   <script>
     const colorPalette = ['rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)', 'rgba(255, 206, 86, 0.7)', 'rgba(75, 192, 192, 0.7)', 'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)', 'rgba(201, 203, 207, 0.7)', 'rgba(255, 99, 71, 0.7)', 'rgba(0, 255, 127, 0.7)', 'rgba(255, 20, 147, 0.7)', 'rgba(0, 191, 255, 0.7)', 'rgba(75, 0, 130, 0.7)', 'rgba(173, 216, 230, 0.7)', 'rgba(240, 128, 128, 0.7)', 'rgba(124, 252, 0, 0.7)', 'rgba(255, 215, 0, 0.7)', 'rgba(255, 105, 180, 0.7)', 'rgba(135, 206, 235, 0.7)', 'rgba(255, 140, 0, 0.7)'];
     let SAPIDTimeoutId, passwordTimeoutId, widgetID;
-    // Spinner
     setTimeout(() => document.getElementById('spinner')?.classList.remove('show'), 1);
-    // Captcha Render
     widgetID = turnstile.ready(function () {
       turnstile.render(".cf-turnstile", {
         sitekey: "0x4AAAAAAAx-ANXhF-Birz5X",
@@ -169,18 +173,15 @@
         "expired-callback": captchaExpired,
       });
     });
-    // Captcha Expired Callback
     function captchaExpired() {
       turnstile.reset(widgetID);
     }
-    // Password Toggle
     const togglePassword = document.getElementById('password-toggle');
     togglePassword.checked = false;
     togglePassword.addEventListener('click', () => {
       password.type = password.type === 'password' ? 'text' : 'password';
       togglePassword.classList.toggle('show', password.type === 'text');
     });
-    // Submit Button
     const submitButton = document.getElementById('submit');
     document.getElementById('attendance-form').addEventListener('keypress', (event) => {
       if (event.key === 'Enter') {
@@ -230,7 +231,7 @@
         if (!response.ok) throw new Error(data.error || 'We couldn\'t retrieve your attendance information at this time.');
         displayUserDetails(data.data);
         renderAttendanceTable(data.data);
-        renderGithubChart(data.data.Attendance.GithubHeatmap, new Date(data.data.Semester.Start));
+        renderAttendanceChart(data.data.Attendance.Heatmap, new Date(data.data.Semester.Start));
         document.getElementById('attendance-report-container').style.display = 'block';
       } catch (error) {
         errorMessage.textContent = error.message;
@@ -282,6 +283,17 @@
 
     function renderAttendanceTable(data) {
       const attendanceTableBody = document.querySelector('#attendance-table tbody');
+      const funfact = document.getElementById('funfact');
+      const downloadCSV = document.getElementById('download-csv');
+
+      downloadCSV.addEventListener('click', () => {
+        const csvData = new Blob([data.Attendance.RawCSV], { type: 'text/csv' });
+        const csvURL = URL.createObjectURL(csvData);
+        const tempLink = document.createElement('a');
+        tempLink.href = csvURL;
+        tempLink.setAttribute('download', `${data.SapID} (${data.Attendance.Range}).csv`);
+        tempLink.click();
+      });
       attendanceTableBody.innerHTML = '';
 
       data.Attendance.Data.forEach(({ Subject, Present, Total, Percentage, DeltaToEighty }) => {
@@ -329,9 +341,9 @@
         medicalCell.appendChild(medicalInput);
         row.style.color = Percentage < 80 ? '#de0a26' : Percentage === 100 ? '#32cd32' : '#ebe8e8';
       });
+      funfact.textContent = data.Attendance.FunFact;
     }
-    // GitHub Graph
-    function renderGithubChart(data, startDate) {
+    function renderAttendanceChart(data, startDate) {
       document.getElementById('attendance-heatmap').innerHTML = '';
       const cal = new CalHeatmap();
 
@@ -348,11 +360,13 @@
         },
         date: { start: new Date(startDate.setMonth(startDate.getMonth() + 1)) },
         range: 6,
+        theme: 'dark',
         scale: {
           color: {
-            type: 'threshold',
-            range: ['#14432a', '#166b34', '#37a446', '#4dd05a'],
-            domain: [0, 2, 4, 6],
+            range: ['#242930', 'red'],
+            interpolate: 'rgb',
+            type: 'symlog',
+            domain: [0, 12],
           },
         },
         domain: {
@@ -368,10 +382,21 @@
             Tooltip,
             {
               text: function (date, value, dayjsDate) {
+                function getOrdinalSuffix(day) {
+                  if (day % 10 === 1 && day % 100 !== 11) return 'st';
+                  if (day % 10 === 2 && day % 100 !== 12) return 'nd';
+                  if (day % 10 === 3 && day % 100 !== 13) return 'rd';
+                  return 'th';
+                }
+
+                const day = dayjsDate.date();
+                const ordinalSuffix = getOrdinalSuffix(day);
+
                 return (
                   (value ? value : 'No') +
-                  ' lectures on ' +
-                  dayjsDate.format('dddd, MMMM D, YYYY')
+                  (value == 1 ? ' lecture on ' : ' lectures on ') +
+                  dayjsDate.format('MMMM D') +
+                  ordinalSuffix
                 );
               },
             },
@@ -388,7 +413,6 @@
         ]
       );
     }
-    // Debounce Back to Top
     const debounce = (func, delay) => {
       let timeout;
       return function (...args) {
