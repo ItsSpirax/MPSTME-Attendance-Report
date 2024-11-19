@@ -293,7 +293,10 @@
         tempLink.href = csvURL;
         tempLink.setAttribute('download', `${data.SapID} (${data.Attendance.Range}).csv`);
         tempLink.click();
+        URL.revokeObjectURL(csvURL);
+        tempLink.remove();
       });
+      
       attendanceTableBody.innerHTML = '';
 
       data.Attendance.Data.forEach(({ Subject, Present, Total, Percentage, DeltaToEighty }) => {
