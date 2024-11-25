@@ -95,29 +95,35 @@ input[type="number"] {
 .content .navbar .navbar-nav .nav-link:hover {
   color: var(--primary);
 }
+
 .logo-container {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-.logo-container svg {
-  width: 25px;
-  height: 25px;
+
+.logo-container i {
+  font-size: 25px;
 }
+
 @media (min-width: 501px) {
   .logo-container {
     font-size: 1rem;
   }
+  .logo-container i {
+    font-size: 25px;
+  }
 }
+
 @media (max-width: 500px) {
   .logo-container {
     font-size: 0.7rem;
   }
-  .logo-container svg {
-    width: 20px;
-    height: 20px;
+  .logo-container i {
+    font-size: 20px;
   }
 }
+
 .table {
   width: 100%;
   max-width: 100%;
@@ -148,4 +154,40 @@ input[type="number"] {
 #user-details td,
 #user-details th {
   border: none;
+}
+
+.tooltip-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #007bff;
+}
+
+.tooltip-button:hover {
+  color: #0056b3;
+}
+
+[data-tooltip] {
+  position: relative;
+  cursor: help;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  padding: 5px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 12px;
+  display: none;
+  z-index: 100;
+}
+
+[data-tooltip]:hover::after {
+  display: block;
 }
