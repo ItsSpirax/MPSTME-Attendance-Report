@@ -4,16 +4,26 @@
 <head>
   <meta charset="UTF-8">
   <title>MPSTME | Attendance</title>
-  <meta name="description" content="Check your latest attendance records here.">
+  <meta name="description" content="Automatically generate your latest attendance report.">
   <meta name="keywords" content="MPSTME, NMIMS, SVKM, Attendance, Report">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:title" content="MPSTME | Attendance">
+  <meta property="og:description" content="Automatically generate your latest attendance report.">
+  <meta property="og:url" content="https://report.adith.tech">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://report.adith.tech/og-image.jpg">
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:title" content="MPSTME | Attendance">
+  <meta property="twitter:description" content="Automatically generate your latest attendance report.">
+  <meta property="twitter:image" content="https://report.adith.tech/og-image.jpg">
+  <meta property="twitter:url" content="https://report.adith.tech">
   <link href="favicon.ico" rel="icon">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload"
-    href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@500;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@500;600&display=swap"
     as="style">
   <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@500;700&display=swap">
+    href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@500;600&display=swap">
   <link rel="stylesheet" href="/css/style.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script>
@@ -37,130 +47,136 @@
     <!-- Content Start -->
     <div class="content" style="flex: 1;">
       <!-- Navbar Start -->
-      <nav class="navbar navbar-expand bg-secondary navbar-dark sticky-top px-4 py-0 user-select-none">
+      <nav class="navbar navbar-expand bg-secondary navbar-dark sticky-top px-4 user-select-none">
         <span class="navbar-brand mb-0 h1">MPSTME Attendance Report</span>
         <div class="navbar-nav align-items-center ms-auto">
           <a rel="noopener" href="https://github.com/ItsSpirax/MPSTME-Attendance-Report" class="nav-link"
             target="_blank">
-            <div class="logo-container p-2">
+            <div class="logo-container">
               <i class="bi bi-github"></i>
-              FOSS Project
+              GitHub Repo
             </div>
           </a>
         </div>
       </nav>
       <!-- Navbar End -->
-
-      <!-- Login Container Start -->
-      <div class="container-fluid pt-4 px-4">
-        <div class="row justify-content-center">
-          <div class="col-12 col-md-9 col-lg-8 col-xl-4">
-            <div class="bg-secondary rounded h-100 p-4" style="overflow-x: auto;">
-              <form id="attendance-form">
-                <div class="mb-3">
-                  <label for="sapid" class="form-label">SAP ID</label>
-                  <input type="text" class="form-control" id="sapid" required>
-                </div>
-                <div class="mb-3">
-                  <label for="password" class="form-label">Portal Password</label>
-                  <input type="password" class="form-control" id="password" required minlength="8">
-                </div>
-                <div class="mb-3 form-check user-select-none">
-                  <input type="checkbox" class="form-check-input" id="password-toggle">
-                  <label class="form-check-label" for="password-toggle">Show Password</label>
-                </div>
-                <div class="mb-3 d-flex justify-content-center">
-                  <div class="cf-turnstile"></div>
-                </div>
-                <div class="d-flex justify-content-center">
-                  <button type="submit" class="btn btn-primary" id="submit">Get Attendance</button>
-                </div>
-                <div class="d-flex justify-content-center mt-2">
-                  <div id="error-message" class="text-danger mt-2" style="display: none;"></div>
-                  <div id="loading-message" class="mt-2" style="display: none;">Please wait, this might take up to 30
-                    seconds...</div>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- Login Container End -->
-
-      <!-- Attendance Report Container Start -->
-      <div class="pt-2 pb-5" id="attendance-report-container" style="display: none;">
-        <div class="row justify-content-center">
-          <div class="col-12 col-md-10 col-xl-8">
-            <div class="container-fluid pt-4">
-              <div class="bg-secondary rounded h-100 p-4" style="overflow-x: auto;">
-                <h6 class="mb-4 text-center">User Details</h6>
-                <table class="table" id="user-details">
-                  <tbody></tbody>
-                </table>
-              </div>
-            </div>
-            <div class="container-fluid pt-4">
-              <div class="bg-secondary rounded h-100 p-4" style="overflow-x: auto;">
-                <h6 class="mb-0 text-center w-100">Attendance Report</h6>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <button class="btn btn-primary btn-sm ms-auto" id="export-csv">Export as CSV</button>
-                </div>
-                <table class="table table-bordered table-hover" id="attendance-table">
-                  <thead>
-                    <tr>
-                      <th>Subject</th>
-                      <th>Present</th>
-                      <th>Total</th>
-                      <th>Percentage</th>
-                      <th>
-                        80% Attendance Adjustment
-                        <button class="tooltip-button"
-                          data-tooltip="Negative: Attend this many classes to reach 80%. Positive: You can skip this many classes and stay above 80%.">
-                          <i class="bi bi-info-circle icon-centered"></i>
-                        </button>
-                      </th>
-                      <th>
-                        Medical
-                        <button class="tooltip-button"
-                          data-tooltip="Add the number of medical leaves you've officially submitted for this subject.">
-                          <i class="bi bi-info-circle icon-centered"></i>
-                        </button>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody></tbody>
-                </table>
-                <div class="text-center mt-4">
-                  <p id="funfact" class="text-muted" style="font-size: 0.875rem;"></p>
-                </div>
-              </div>
-            </div>
-
-            <div class="container-fluid pt-4 pb-4">
-              <div class="bg-dark rounded h-100 p-4" style="overflow-x: auto;">
-                <h6 class="mb-4 text-center">Attendance Chart</h6>
-                <div class="d-flex justify-content-center">
-                  <div id="attendance-heatmap" style="max-width: 100%;"></div>
-                </div>
+      <div id="wrapper">
+        <!-- Login Container Start -->
+        <div class="container-fluid pt-4 px-4">
+          <div class="row justify-content-center">
+            <div class="col-12 col-md-9 col-lg-8 col-xl-4">
+              <div class="bg-secondary rounded h-100 p-4" style="overflow: auto;">
+                <form id="attendance-form">
+                  <div class="mb-3">
+                    <label for="sapid" class="form-label">SAP ID</label>
+                    <input type="text" class="form-control" id="sapid" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="password" class="form-label">Portal Password</label>
+                    <input type="password" class="form-control" id="password" required minlength="8">
+                  </div>
+                  <div class="mb-3 form-check user-select-none">
+                    <input type="checkbox" class="form-check-input" id="password-toggle">
+                    <label class="form-check-label" for="password-toggle">Show Password</label>
+                  </div>
+                  <div class="mb-3 d-flex justify-content-center">
+                    <div class="cf-turnstile"></div>
+                  </div>
+                  <div class="d-flex justify-content-center">
+                    <button type="submit" class="btn btn-primary" id="submit">Get Attendance</button>
+                  </div>
+                  <div class="d-flex justify-content-center mt-2">
+                    <div id="error-message" class="text-danger mt-2" style="display: none;"></div>
+                    <div id="loading-message" class="mt-2" style="display: none;">Please wait, this might take up to 30
+                      seconds...</div>
+                  </div>
+                </form>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <!-- Attendance Report Container End -->
+        <!-- Login Container End -->
 
-      <!-- Footer Start -->
-      <footer class="bg-dark text-center py-3" style="position: sticky; bottom: 0; width: 100%;">
-        &copy; <a rel="noopener" href="https://github.com/ItsSpirax">Adith</a>, All Rights Reserved.
-      </footer>
-      <!-- Footer End -->
+        <!-- Attendance Report Container Start -->
+        <div class="pt-2 pb-5 mt-4" id="attendance-report-container" style="display: none;">
+          <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-xl-8">
+              <div class="container-fluid pt-4">
+                <div class="bg-secondary rounded h-100 p-4" style="overflow-x: auto;">
+                  <h6 class="mb-4 text-center">User Details</h6>
+                  <table class="table" id="user-details">
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="container-fluid pt-4">
+                <div class="bg-secondary rounded h-100 p-4">
+                  <div class="rounded h-100">
+                    <h6 class="mb-4 text-center">Attendance Chart</h6>
+                    <div class="d-flex justify-content-center" style="overflow-x: auto;">
+                      <div id="attendance-heatmap" style="max-width: 100%;"></div>
+                    </div>
+                  </div>
+                  <div class="text-center mt-4">
+                    <p id="funfact" class="text-muted" style="font-size: 0.875rem;"></p>
+                  </div>
+                </div>
+              </div>
+              <div class="container-fluid pt-4">
+                <div class="bg-secondary rounded h-100 p-4">
+                  <h6 class="mb-4 text-center w-100">Attendance Report</h6>
+                  <div style="overflow-x: auto;">
+                    <table class="table table-bordered table-hover" id="attendance-table">
+                      <thead>
+                        <tr>
+                          <th>Subject</th>
+                          <th>Present</th>
+                          <th>Total</th>
+                          <th>Percentage</th>
+                          <th>
+                            Adjustment
+                            <button class="tooltip-button"
+                              data-tooltip="The number indicates how many classes you need to attend (negative) or can miss (positive) to stay above 80% attendance.">
+                              <i class="bi bi-info-circle icon-centered"></i>
+                            </button>
+                          </th>
+                          <th>
+                            Medical
+                            <button class="tooltip-button"
+                              data-tooltip-medical="Add the number of medical leaves you have submitted for this subject.">
+                              <i class="bi bi-info-circle icon-centered"></i>
+                            </button>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-2">
+                    <div class="d-flex justify-content-start w-100">
+                      <button class="btn btn-primary btn-sm ms-auto" id="export-csv"
+                        style="font-size: 0.8rem; padding: 4px 4px;">Export Raw</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Attendance Report Container End -->
+
+        <!-- Footer Start -->
+        <footer class="bg-dark text-center py-3" style="position: sticky; bottom: 0; width: 100%;">
+          &copy; <a rel="noopener" href="https://github.com/ItsSpirax">Adith</a>, All Rights Reserved.
+        </footer>
+        <!-- Footer End -->
+      </div>
+
+      <a href="#top" class="btn btn-lg btn-primary btn-lg-square back-to-top" aria-label="Back to Top">
+        <i class="bi bi-arrow-up"></i>
+      </a>
     </div>
-
-    <a href="#top" class="btn btn-lg btn-primary btn-lg-square back-to-top" aria-label="Back to Top">
-      <i class="bi bi-arrow-up"></i>
-    </a>
   </div>
-
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" data-cfasync="false"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/cal-heatmap.min.js" defer></script>
@@ -168,7 +184,6 @@
   <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/plugins/Tooltip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/plugins/CalendarLabel.min.js"></script>
   <script>
-    const colorPalette = ['rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)', 'rgba(255, 206, 86, 0.7)', 'rgba(75, 192, 192, 0.7)', 'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)', 'rgba(201, 203, 207, 0.7)', 'rgba(255, 99, 71, 0.7)', 'rgba(0, 255, 127, 0.7)', 'rgba(255, 20, 147, 0.7)', 'rgba(0, 191, 255, 0.7)', 'rgba(75, 0, 130, 0.7)', 'rgba(173, 216, 230, 0.7)', 'rgba(240, 128, 128, 0.7)', 'rgba(124, 252, 0, 0.7)', 'rgba(255, 215, 0, 0.7)', 'rgba(255, 105, 180, 0.7)', 'rgba(135, 206, 235, 0.7)', 'rgba(255, 140, 0, 0.7)'];
     let SAPIDTimeoutId, passwordTimeoutId, widgetID;
     setTimeout(() => document.getElementById('spinner')?.classList.remove('show'), 1);
     widgetID = turnstile.ready(function () {
@@ -179,6 +194,7 @@
         "expired-callback": captchaExpired,
       });
     });
+
     function captchaExpired() {
       turnstile.reset(widgetID);
     }
@@ -239,6 +255,10 @@
         renderAttendanceTable(data.data);
         renderAttendanceChart(data.data.Attendance.Heatmap, new Date(data.data.Semester.Start));
         document.getElementById('attendance-report-container').style.display = 'block';
+        window.scrollTo({
+          top: document.getElementById('attendance-report-container').getBoundingClientRect().top + window.scrollY - 100,
+          behavior: 'smooth',
+        });
       } catch (error) {
         errorMessage.textContent = error.message;
         errorMessage.style.display = 'block';
@@ -253,37 +273,34 @@
     function displayUserDetails(data) {
       const userDetailsTable = document.querySelector('#user-details tbody');
       userDetailsTable.innerHTML = `
-                <thead>
-                  <tr>
-                    <td colspan="2">
-                      <strong style="color: white;">Name:</strong>
-                      <br>${data.Name || 'N/A'}
-                    </td>
-                    <td colspan="2">
-                      <strong style="color: white;">SAP ID:</strong>
-                      <br>${data.SapID || 'N/A'}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colspan="2">
-                      <strong style="color: white;">Program:</strong>
-                      <br>${data.Program || 'N/A'}
-                    </td>
-                    <td colspan="2">
-                      <strong style="color: white;">Roll No:</strong>
-                      <br>${data.RollNo || 'N/A'}
-                    </td>
-                  <tr>
-                  <tr>
-                    <td colspan="2">
-                      <strong style="color: white;">Semester:</strong>
-                      <br>${data.Semester.Name || 'N/A'}
-                    </td>
-                    <td colspan="2">
-                      <strong style="color: white;">Time:</strong>
-                      <br>${data.Attendance.Range || 'N/A'}
-                  </td>
-                </thead>
+              <tr>
+                <td style="text-align: center; width: 33%;">
+                  <b style="color: #a0a6c2;">Name:</b><br>
+                  <span style="font-weight:500;">${data.Name || 'N/A'}</span>
+                </td>
+                <td style="text-align: center; width: 33%;">
+                  <b style="color: #a0a6c2;">SAP ID:</b><br>
+                  <span style="font-weight:500;">${data.SapID || 'N/A'}</span>
+                </td>
+                <td style="text-align: center; width: 33%;">
+                  <b style="color: #a0a6c2;">Roll No:</b><br>
+                  <span style="font-weight:500;">${data.RollNo || 'N/A'}</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="text-align: center; width: 33%;">
+                  <b style="color: #a0a6c2;">Program:</b><br>
+                  <span style="font-weight:500;">${data.Program || 'N/A'}</span>
+                </td>
+                <td style="text-align: center; width: 33%;">
+                  <b style="color: #a0a6c2;">Semester:</b><br>
+                  <span style="font-weight:500;">${data.Semester.Name || 'N/A'}</span>
+                </td>
+                <td style="text-align: center; width: 33%;">
+                  <b style="color: #a0a6c2;">Range:</b><br>
+                  <span style="font-weight:500;">${data.Attendance.Range || 'N/A'}</span>
+                </td>
+              </tr>
               `;
     }
 
@@ -291,9 +308,10 @@
       const attendanceTableBody = document.querySelector('#attendance-table tbody');
       const funfact = document.getElementById('funfact');
       const downloadCSV = document.getElementById('export-csv');
-
       downloadCSV.addEventListener('click', () => {
-        const csvData = new Blob([data.Attendance.RawCSV], { type: 'text/csv' });
+        const csvData = new Blob([data.Attendance.RawCSV], {
+          type: 'text/csv'
+        });
         const csvURL = URL.createObjectURL(csvData);
         const tempLink = document.createElement('a');
         tempLink.href = csvURL;
@@ -302,30 +320,29 @@
         URL.revokeObjectURL(csvURL);
         tempLink.remove();
       });
-
       attendanceTableBody.innerHTML = '';
-
-      data.Attendance.Data.forEach(({ Subject, Present, Total, Percentage, DeltaToEighty }) => {
+      data.Attendance.Data.forEach(({
+        Subject,
+        Present,
+        Total,
+        Percentage,
+        DeltaToEighty
+      }) => {
         const row = attendanceTableBody.insertRow();
-
         row.insertCell().textContent = Subject;
         const presentCell = row.insertCell();
         presentCell.textContent = Present;
-
         row.insertCell().textContent = Total;
         const percentageCell = row.insertCell();
         percentageCell.textContent = `${Percentage}%`;
-
         const deltaCell = row.insertCell();
         deltaCell.textContent = DeltaToEighty > 0 ? `+${DeltaToEighty}` : DeltaToEighty;
-
         const medicalCell = row.insertCell();
         const medicalInput = document.createElement('input');
         medicalInput.type = 'number';
-        medicalInput.min = 0;
         medicalInput.max = Math.max(0, Total - Present);
         medicalInput.value = 0;
-
+        medicalInput.style.width = '50px';
         medicalInput.addEventListener('input', () => {
           let medical = parseInt(medicalInput.value) || 0;
           medical = Math.max(0, Math.min(medical, Total - Present));
@@ -334,17 +351,17 @@
           const updatedPresent = Present + medical;
           const updatedPercentage = Math.round((updatedPresent / Total) * 10000) / 100;
           const updatedDelta =
-            updatedPercentage < 80
-              ? -Math.ceil(((0.8 * Total).toFixed(2) - updatedPresent) / 0.2)
-              : Math.floor((updatedPresent - (0.8 * Total).toFixed(2)) / 0.8)
+            updatedPercentage < 80 ?
+              -Math.ceil(((0.8 * Total).toFixed(2) - updatedPresent) / 0.2) :
+              Math.floor((updatedPresent - (0.8 * Total).toFixed(2)) / 0.8)
 
           presentCell.textContent = updatedPresent;
           percentageCell.textContent = `${updatedPercentage}%`;
           deltaCell.textContent = updatedDelta > 0 ? `+${updatedDelta}` : updatedDelta;
 
-          row.style.color = updatedPercentage < 80 ? '#de0a26'
-            : updatedPercentage === 100 ? '#32cd32'
-              : '#ebe8e8';
+          row.style.color = updatedPercentage < 80 ? '#de0a26' :
+            updatedPercentage === 100 ? '#32cd32' :
+              '#ebe8e8';
         });
 
         medicalCell.appendChild(medicalInput);
@@ -352,10 +369,10 @@
       });
       funfact.textContent = data.Attendance.FunFact;
     }
+
     function renderAttendanceChart(data, startDate) {
       document.getElementById('attendance-heatmap').innerHTML = '';
       const cal = new CalHeatmap();
-
       const formattedData = Object.entries(data).map(([timestamp, value]) => ({
         date: new Date(Number(timestamp)),
         value: value,
@@ -367,8 +384,10 @@
           x: 'date',
           y: 'value',
         },
-        date: { start: new Date(startDate.setMonth(startDate.getMonth() + 1)) },
-        range: 6,
+        date: {
+          start: window.matchMedia('(max-width: 1196px)').matches ? new Date(startDate.setMonth(startDate.getMonth() + 1)) : new Date(new Date().getFullYear(), 1, 1),
+        },
+        range: window.matchMedia('(max-width: 1196px)').matches ? 6 : 12,
         theme: 'dark',
         scale: {
           color: {
@@ -381,9 +400,19 @@
         domain: {
           type: 'month',
           gutter: 4,
-          label: { text: 'MMM', textAlign: 'start', position: 'top' },
+          label: {
+            text: 'MMM',
+            textAlign: 'start',
+            position: 'top'
+          },
         },
-        subDomain: { type: 'ghDay', radius: 2, width: 11, height: 11, gutter: 4 },
+        subDomain: {
+          type: 'ghDay',
+          radius: 2,
+          width: 11,
+          height: 11,
+          gutter: 4
+        },
         itemSelector: '#attendance-heatmap',
       },
         [
@@ -430,7 +459,12 @@
       };
     };
     const handleScroll = debounce(() => {
-      document.querySelector('.back-to-top').style.display = window.scrollY > 300 ? 'block' : 'none';
+      const backToTopButton = document.querySelector('.back-to-top');
+      if (window.scrollY > 300) {
+        backToTopButton.classList.add('show');
+      } else {
+        backToTopButton.classList.remove('show');
+      }
     }, 300);
     window.addEventListener('scroll', handleScroll);
     document.querySelector('.back-to-top').addEventListener('click', (e) => {
