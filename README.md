@@ -16,7 +16,9 @@ This repository contains the code for a web application that allows NMIMS studen
 
 ## Demo
 
-![Attendance Report](assets/report.png)
+![User Details](assets/user-details.png)
+![Attendance Chart](assets/attendance-chart.png)
+![Attendance Report](assets/attendance-report.png)
 
 ## How it Works
 

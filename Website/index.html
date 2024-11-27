@@ -27,25 +27,26 @@
   <link rel="stylesheet" href="/css/style.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script>
+    document.body.style.display = 'block';
     fetch('https://report-api.adith.tech/v1/getAttendanceReport?ping=true', {
       method: 'POST'
     });
   </script>
 </head>
 
-<body>
-  <div class="container-fluid position-relative d-flex p-0" style="min-height: 100vh; flex-direction: column;">
+<body style="display: none;">
+  <div id="main" class="container-fluid position-relative d-flex p-0">
     <!-- Spinner Start -->
     <div id="spinner"
       class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-      <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+      <div id="loading-spinner" class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
     </div>
     <!-- Spinner End -->
 
     <!-- Content Start -->
-    <div class="content" style="flex: 1;">
+    <div class="content">
       <!-- Navbar Start -->
       <nav class="navbar navbar-expand bg-secondary navbar-dark sticky-top px-4 user-select-none">
         <span class="navbar-brand mb-0 h1">MPSTME Attendance Report</span>
@@ -65,7 +66,7 @@
         <div class="container-fluid pt-4 px-4">
           <div class="row justify-content-center">
             <div class="col-12 col-md-9 col-lg-8 col-xl-4">
-              <div class="bg-secondary rounded h-100 p-4" style="overflow: auto;">
+              <div class="bg-secondary rounded h-100 p-4 overflow-auto">
                 <form id="attendance-form">
                   <div class="mb-3">
                     <label for="sapid" class="form-label">SAP ID</label>
@@ -86,8 +87,8 @@
                     <button type="submit" class="btn btn-primary" id="submit">Get Attendance</button>
                   </div>
                   <div class="d-flex justify-content-center mt-2">
-                    <div id="error-message" class="text-danger mt-2" style="display: none;"></div>
-                    <div id="loading-message" class="mt-2" style="display: none;">Please wait, this might take up to 30
+                    <div id="error-message" class="text-danger mt-2 d-none"></div>
+                    <div id="loading-message" class="mt-2 d-none">Please wait, this might take up to 30
                       seconds...</div>
                   </div>
                 </form>
@@ -98,13 +99,13 @@
         <!-- Login Container End -->
 
         <!-- Attendance Report Container Start -->
-        <div class="pt-2 pb-5 mt-4" id="attendance-report-container" style="display: none;">
+        <div class="pt-2 pb-5 mt-4 d-none" id="attendance-report-container">
           <div class="row justify-content-center">
             <div class="col-12 col-md-10 col-xl-8">
               <div class="container-fluid pt-4">
-                <div class="bg-secondary rounded h-100 p-4" style="overflow-x: auto;">
-                  <h6 class="mb-4 text-center">User Details</h6>
-                  <table class="table" id="user-details">
+                <div class="bg-secondary rounded h-100 p-4 overflow-x-auto">
+                  <h6 class="mb-4 text-center text-main">User Details</h6>
+                  <table class="table table-user" id="user-details">
                     <tbody></tbody>
                   </table>
                 </div>
@@ -112,20 +113,33 @@
               <div class="container-fluid pt-4">
                 <div class="bg-secondary rounded h-100 p-4">
                   <div class="rounded h-100">
-                    <h6 class="mb-4 text-center">Attendance Chart</h6>
-                    <div class="d-flex justify-content-center" style="overflow-x: auto;">
-                      <div id="attendance-heatmap" style="max-width: 100%;"></div>
+                    <h6 class="mb-4 text-center text-main">Attendance Chart</h6>
+                    <div class="d-flex justify-content-center">
+                      <div class="heatmap-container">
+                        <div class="heatmap-wrapper">
+                          <div id="attendance-heatmap" class="overflow-x-auto"></div>
+                          <div id="attendance-legend" class="legend-container">
+                            <span class="legend-label">Less</span>
+                            <div class="legend-box" style="background-color: #2d333b;"></div>
+                            <div class="legend-box" style="background-color: #9a1316;"></div>
+                            <div class="legend-box" style="background-color: #ca0a0c;"></div>
+                            <div class="legend-box" style="background-color: #e90405;"></div>
+                            <div class="legend-box" style="background-color: #ff0000;"></div>
+                            <span class="legend-label">More</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div class="text-center mt-4">
-                    <p id="funfact" class="text-muted" style="font-size: 0.875rem;"></p>
+                    <p id="funfact" class="text-muted"></p>
                   </div>
                 </div>
               </div>
               <div class="container-fluid pt-4">
                 <div class="bg-secondary rounded h-100 p-4">
-                  <h6 class="mb-4 text-center w-100">Attendance Report</h6>
-                  <div style="overflow-x: auto;">
+                  <h6 class="mb-4 text-center w-100 text-main">Attendance Report</h6>
+                  <div class="overflow-x-auto">
                     <table class="table table-bordered table-hover" id="attendance-table">
                       <thead>
                         <tr>
@@ -154,8 +168,7 @@
                   </div>
                   <div class="d-flex justify-content-between align-items-center mt-2">
                     <div class="d-flex justify-content-start w-100">
-                      <button class="btn btn-primary btn-sm ms-auto" id="export-csv"
-                        style="font-size: 0.8rem; padding: 4px 4px;">Export Raw</button>
+                      <button class="btn btn-primary btn-sm ms-auto" id="export-csv">Download Raw CSV</button>
                     </div>
                   </div>
                 </div>
@@ -166,8 +179,8 @@
         <!-- Attendance Report Container End -->
 
         <!-- Footer Start -->
-        <footer class="bg-dark text-center py-3" style="position: sticky; bottom: 0; width: 100%;">
-          &copy; <a rel="noopener" href="https://github.com/ItsSpirax">Adith</a>, All Rights Reserved.
+        <footer class="bg-dark text-center py-3 footer">
+          &copy; <a rel="noopener" href="https://github.com/ItsSpirax" target="_blank">Adith</a>, All Rights Reserved.
         </footer>
         <!-- Footer End -->
       </div>
@@ -217,26 +230,27 @@
       const password = document.getElementById('password');
       const errorMessage = document.getElementById('error-message');
       const loadingMessage = document.getElementById('loading-message');
+      const attendanceReportContainer = document.getElementById('attendance-report-container');
       if (isNaN(username.value) || username.value.length <= 4) {
         errorMessage.textContent = 'Please enter a valid SAP ID.';
-        errorMessage.style.display = 'block';
+        errorMessage.classList.remove('d-none');
         return;
       }
       if (!(password.value.length >= 8)) {
         errorMessage.textContent = 'Password must be at least 8 characters long.';
-        errorMessage.style.display = 'block';
+        errorMessage.classList.remove('d-none');
         return;
       }
       if (!turnstile.getResponse(widgetID) || turnstile.isExpired(widgetID)) {
         errorMessage.textContent = 'Please complete the captcha.';
-        errorMessage.style.display = 'block';
+        errorMessage.classList.remove('d-none');
         return;
       }
       errorMessage.textContent = '';
-      errorMessage.style.display = 'none';
+      errorMessage.classList.add('d-none');
       submitButton.disabled = true;
       submitButton.innerHTML = `Generating Report&nbsp;&nbsp;<div class="spinner-border spinner-border-sm" role="status"></div>`;
-      loadingMessage.style.display = 'block';
+      loadingMessage.classList.remove('d-none');
       try {
         const response = await fetch('https://report-api.adith.tech/v1/getAttendanceReport', {
           method: 'POST',
@@ -254,18 +268,18 @@
         displayUserDetails(data.data);
         renderAttendanceTable(data.data);
         renderAttendanceChart(data.data.Attendance.Heatmap, new Date(data.data.Semester.Start));
-        document.getElementById('attendance-report-container').style.display = 'block';
+        attendanceReportContainer.classList.remove('d-none');
         window.scrollTo({
-          top: document.getElementById('attendance-report-container').getBoundingClientRect().top + window.scrollY - 100,
+          top: attendanceReportContainer.getBoundingClientRect().top + window.scrollY - 100,
           behavior: 'smooth',
         });
       } catch (error) {
         errorMessage.textContent = error.message;
-        errorMessage.style.display = 'block';
+        errorMessage.classList.remove('d-none');
       } finally {
         submitButton.disabled = false;
         submitButton.innerHTML = 'Get Attendance';
-        loadingMessage.style.display = 'none';
+        loadingMessage.classList.add('d-none');
         turnstile.reset(widgetID);
       }
     });
@@ -274,31 +288,31 @@
       const userDetailsTable = document.querySelector('#user-details tbody');
       userDetailsTable.innerHTML = `
               <tr>
-                <td style="text-align: center; width: 33%;">
-                  <b style="color: #a0a6c2;">Name:</b><br>
-                  <span style="font-weight:500;">${data.Name || 'N/A'}</span>
+                <td>
+                  <b>Name:</b><br>
+                  <span">${data.Name || 'N/A'}</span>
                 </td>
-                <td style="text-align: center; width: 33%;">
-                  <b style="color: #a0a6c2;">SAP ID:</b><br>
-                  <span style="font-weight:500;">${data.SapID || 'N/A'}</span>
+                <td>
+                  <b>SAP ID:</b><br>
+                  <span">${data.SapID || 'N/A'}</span>
                 </td>
-                <td style="text-align: center; width: 33%;">
-                  <b style="color: #a0a6c2;">Roll No:</b><br>
-                  <span style="font-weight:500;">${data.RollNo || 'N/A'}</span>
+                <td>
+                  <b>Roll No:</b><br>
+                  <span">${data.RollNo || 'N/A'}</span>
                 </td>
               </tr>
               <tr>
-                <td style="text-align: center; width: 33%;">
-                  <b style="color: #a0a6c2;">Program:</b><br>
-                  <span style="font-weight:500;">${data.Program || 'N/A'}</span>
+                <td>
+                  <b>Program:</b><br>
+                  <span">${data.Program || 'N/A'}</span>
                 </td>
-                <td style="text-align: center; width: 33%;">
-                  <b style="color: #a0a6c2;">Semester:</b><br>
-                  <span style="font-weight:500;">${data.Semester.Name || 'N/A'}</span>
+                <td>
+                  <b>Semester:</b><br>
+                  <span">${data.Semester.Name || 'N/A'}</span>
                 </td>
-                <td style="text-align: center; width: 33%;">
-                  <b style="color: #a0a6c2;">Range:</b><br>
-                  <span style="font-weight:500;">${data.Attendance.Range || 'N/A'}</span>
+                <td>
+                  <b>Range:</b><br>
+                  <span">${data.Attendance.Range || 'N/A'}</span>
                 </td>
               </tr>
               `;
@@ -342,7 +356,9 @@
         medicalInput.type = 'number';
         medicalInput.max = Math.max(0, Total - Present);
         medicalInput.value = 0;
-        medicalInput.style.width = '50px';
+        medicalInput.classList.add('form-control');
+        medicalInput.style.width = '65px';
+        medicalInput.style.margin = 'auto';
         medicalInput.addEventListener('input', () => {
           let medical = parseInt(medicalInput.value) || 0;
           medical = Math.max(0, Math.min(medical, Total - Present));
@@ -361,11 +377,11 @@
 
           row.style.color = updatedPercentage < 80 ? '#de0a26' :
             updatedPercentage === 100 ? '#32cd32' :
-              '#ebe8e8';
+              '#dcdcdc';
         });
 
         medicalCell.appendChild(medicalInput);
-        row.style.color = Percentage < 80 ? '#de0a26' : Percentage === 100 ? '#32cd32' : '#ebe8e8';
+        row.style.color = Percentage < 80 ? '#de0a26' : Percentage === 100 ? '#32cd32' : '#dcdcdc';
       });
       funfact.textContent = data.Attendance.FunFact;
     }
