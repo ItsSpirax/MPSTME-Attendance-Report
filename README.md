@@ -1,4 +1,5 @@
 # MPSTME Attendance Report
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FItsSpirax%2FMPSTME-Attendance-Report.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FItsSpirax%2FMPSTME-Attendance-Report?ref=badge_shield)
 
 This repository contains the code for a web application that allows NMIMS students to easily check their latest attendance records. The application fetches attendance data from the SVKM portal and displays it in a user-friendly format.
 
@@ -16,7 +17,9 @@ This repository contains the code for a web application that allows NMIMS studen
 
 ## Demo
 
-![Attendance Report](assets/report.png)
+![User Details](assets/user-details.png)
+![Attendance Chart](assets/attendance-chart.png)
+![Attendance Report](assets/attendance-report.png)
 
 ## How it Works
 
@@ -87,4 +90,6 @@ Contributions are welcome! Feel free to open issues and pull requests.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the GPL 3.0 License - see the [LICENSE.md](LICENSE.md) file for details.
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FItsSpirax%2FMPSTME-Attendance-Report.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FItsSpirax%2FMPSTME-Attendance-Report?ref=badge_large)

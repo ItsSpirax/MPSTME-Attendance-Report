@@ -204,12 +204,16 @@ def fun_fact(attendance_df):
             attendance_df["Date"] = attendance_df["Date"].dt.date
             attendance_df = attendance_df.sort_values("Date").reset_index(drop=True)
             for i in range(1, attendance_df.shape[0]):
-                if (attendance_df.iloc[i]["Date"] - attendance_df.iloc[i - 1]["Date"]).days == 1:
+                if (
+                    attendance_df.iloc[i]["Date"] - attendance_df.iloc[i - 1]["Date"]
+                ).days == 1:
                     streak += 1
                     max_streak = max(max_streak, streak)
                 else:
                     streak = 1
-            print(f"🎉 Wow! Your longest streak of attendance is {max_streak} days. You're on fire! Keep that momentum going!")
+            print(
+                f"🎉 Wow! Your longest streak of attendance is {max_streak} days. You're on fire! Keep that momentum going!"
+            )
 
         if rand == 1:
             date = attendance_df["Date"].dt.date.value_counts().idxmax()
@@ -389,10 +393,21 @@ def generate_report(soup):
                 }
             )
 
-        # Build GitHub graph data
+        # Build Attendance Heatmap data using full attendance data
+        if semester != "First":
+            previous_semester = SEMESTER_MAP[
+                list(SEMESTER_MAP.keys())[
+                    list(SEMESTER_MAP.values()).index(semester) - 1
+                ]
+            ]
+            attendance_df_full = pd.concat(
+                [get_attendance_df(soup, previous_semester)[0], attendance_df]
+            )
+        else:
+            attendance_df_full = attendance_df.copy()
         attendance_heatmap_data = (
-            attendance_df.drop(columns=["Subject"])
-            .assign(Date=pd.to_datetime(attendance_df["Date"]).dt.date)
+            attendance_df_full.drop(columns=["Subject"])
+            .assign(Date=pd.to_datetime(attendance_df_full["Date"]).dt.date)
             .groupby("Date", as_index=False)
             .agg(Present=("Present", "sum"))
             .loc[lambda df: df["Present"] != 0]
