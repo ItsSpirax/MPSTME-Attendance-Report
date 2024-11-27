@@ -19,6 +19,7 @@ This repository contains the code for a web application that allows NMIMS studen
 ![User Details](assets/user-details.png)
 ![Attendance Chart](assets/attendance-chart.png)
 ![Attendance Report](assets/attendance-report.png)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FItsSpirax%2FMPSTME-Attendance-Report.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FItsSpirax%2FMPSTME-Attendance-Report?ref=badge_shield)
 
 ## How it Works
 
@@ -90,3 +91,6 @@ Contributions are welcome! Feel free to open issues and pull requests.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FItsSpirax%2FMPSTME-Attendance-Report.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FItsSpirax%2FMPSTME-Attendance-Report?ref=badge_large)
