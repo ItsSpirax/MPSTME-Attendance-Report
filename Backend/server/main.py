@@ -1,13 +1,12 @@
 """
-Developed by Adith
+Developed by Adith Ramakrishna
 GitHub Repository: https://github.com/ItsSpirax/MPSTME-Attendance-Report
 
 Description:
 This Flask application facilitates the retrieval and analysis of attendance 
 data from the SVKM portal. It provides users with detailed attendance 
-reports, including subject-wise statistics, low-attendance warnings, and 
-data visualization-friendly formats such as line graphs and GitHub-style 
-activity heatmaps.
+reports, low-attendance warnings, interesting facts, and data 
+visualization-friendly formats such as GitHub Themed heatmaps.
 
 Key Features:
 - Secure credential handling using RSA encryption.
@@ -17,8 +16,8 @@ Key Features:
   (e.g., low-attendance deltas).
 
 License:
-MIT License - Open source and available for use under the terms 
-specified in the license.
+GNU General Public License v3.0
+Use, modify, and distribute the code freely, provided the license is included.
 """
 
 import base64
@@ -561,4 +560,4 @@ def attendance():
 
     except Exception as err:
         log(request.headers.get("User-Agent"), start_time, str(err))
-        return jsonify({"error": f"(GE-1) An unexpected error occurred: {err}"}), 500
+        return jsonify({"error": f"(GE-1) An unexpected error occurred! Please try again later."}), 500

@@ -90,6 +90,4 @@ Contributions are welcome! Feel free to open issues and pull requests.
 
 ## License
 
-This project is licensed under the GPL 3.0 License - see the [LICENSE.md](LICENSE.md) file for details.
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FItsSpirax%2FMPSTME-Attendance-Report.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FItsSpirax%2FMPSTME-Attendance-Report?ref=badge_large)
+This project is licensed under the GPL 3.0 License - see the [LICENSE](LICENSE) file for details.

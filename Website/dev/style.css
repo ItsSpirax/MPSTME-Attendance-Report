@@ -294,3 +294,16 @@ body {
 .text-main {
   color: #e0e0e0!important;
 }
+
+.bi {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+  vertical-align: middle;
+  text-align: center;
+  display: inline-block;
+}
+
+.bi-info-circle {
+  transform: translateY(-1px);
+}
