@@ -178,68 +178,75 @@ def get_user_details(soup):
 
 def fun_fact(attendance_df):
     """Generates a fun fact based on the attendance data."""
-
-    if attendance_df.empty:
-        return "Uh-oh! Looks like you've missed all the classes this semester. Better luck next time!"
-
-    if attendance_df.shape[0] < 3:
+    if attendance_df.shape[0] < 7:
         return "Just getting started? Your attendance is looking good, but let's see how it improves over time!"
 
-    if (attendance_df["Date"].max() - attendance_df["Date"].min()).days < 30:
-        return "Looks like your semester was really short! We'll need a bit more data to give you a fun fact!"
+    if (attendance_df["Date"].max() - attendance_df["Date"].min()).days < 15:
+        return "Looks like your semester just started! Keep up the good work and check back for more insights soon."
 
     try:
-        rand = random.randint(0, 7)
-
-        present_df = attendance_df[attendance_df["Present"] == True]
-        total_hours_in_sem_months = (
+        rand = random.randint(0, 9)
+        present_df = attendance_df[attendance_df["Present"] == True].copy()
+        total_hours_in_semester = (
             attendance_df["Date"].max() - attendance_df["Date"].min()
         ).days * 24
-        spent_in_lec = present_df.value_counts().sum()
+        hours_in_lectures = present_df.shape[0]
 
         if rand == 0:
-            streak = 1
-            max_streak = 1
-            attendance_df["Date"] = attendance_df["Date"].dt.date
-            attendance_df = attendance_df.sort_values("Date").reset_index(drop=True)
-            for i in range(1, attendance_df.shape[0]):
+            streak, max_streak = 1, 1
+            present_df["Date"] = present_df["Date"].dt.date
+            present_df = (
+                present_df.sort_values("Date")
+                .reset_index(drop=True)
+                .drop_duplicates(subset="Date")
+            )
+            for i in range(1, present_df.shape[0]):
                 if (
-                    attendance_df.iloc[i]["Date"] - attendance_df.iloc[i - 1]["Date"]
+                    present_df.iloc[i]["Date"] - present_df.iloc[i - 1]["Date"]
                 ).days == 1:
                     streak += 1
                     max_streak = max(max_streak, streak)
                 else:
                     streak = 1
-            print(
-                f"🎉 Wow! Your longest streak of attendance is {max_streak} days. You're on fire! Keep that momentum going!"
-            )
+            return f"🎉 Wow! Your longest streak of attendance is {max_streak} days. Keep that momentum going!"
 
         if rand == 1:
-            date = attendance_df["Date"].dt.date.value_counts().idxmax()
-            return f"📅 Looks like {date.strftime('%d %B')} was your busiest day! You attended {attendance_df[attendance_df['Date'].dt.date == date].shape[0]} hours of lectures. Phew, that's a lot of learning!"
+            busiest_date = attendance_df["Date"].dt.date.value_counts().idxmax()
+            lectures_on_date = attendance_df[
+                attendance_df["Date"].dt.date == busiest_date
+            ].shape[0]
+            return f"📅 Looks like {busiest_date.strftime('%d %B')} was your busiest day with {lectures_on_date} hours of lectures. Great effort!"
 
         if rand == 2:
-            ratio = spent_in_lec / total_hours_in_sem_months
+            attendance_ratio = hours_in_lectures / total_hours_in_semester
             if random.random() < 0.5:
-                return f"⏳ Guess what? You've spent a whopping {ratio * 100:.2f}% of your time in class this semester! That's some serious dedication!"
-            return f"🎓 You've spent a total of {spent_in_lec} hours in class. That’s like binge-watching your favorite series – but with textbooks!"
+                return f"⏳ You've spent {attendance_ratio * 100:.2f}% of your time in lectures this semester. Amazing dedication!"
+            return f"🎓 You've attended {hours_in_lectures} hours of lectures. That’s like binge-watching your favorite series – but with learning!"
 
         if rand == 3:
-            rand_week_month = random.randint(0, 1)
-            if rand_week_month == 0:
-                present_df["Month"] = present_df["Date"].dt.month
-                month = present_df["Month"].value_counts().idxmax()
-                return f"🌟 You were the most punctual in {calendar.month_name[month]}! You attended {present_df[present_df['Month'] == month].shape[0]} hours of lectures that month. Keep it up!"
-            else:
-                present_df["Week"] = present_df["Date"].dt.isocalendar().week
-                week = present_df["Week"].value_counts().idxmax()
-                return f"⏰ The most punctual week? Week {week}! You attended {present_df[present_df['Week'] == week].shape[0]} hours of lectures. You’re on top of your game!"
+            if random.random() < 0.5:
+                most_punctual_month = (
+                    present_df["Date"].dt.month.value_counts().idxmax()
+                )
+                month_name = calendar.month_name[most_punctual_month]
+                hours_in_month = present_df[
+                    present_df["Date"].dt.month == most_punctual_month
+                ].shape[0]
+                return f"🌟 You were most punctual in {month_name} with {hours_in_month} hours of lectures. Keep it up!"
+
+            most_punctual_week = (
+                present_df["Date"].dt.isocalendar().week.value_counts().idxmax()
+            )
+            hours_in_week = present_df[
+                present_df["Date"].dt.isocalendar().week == most_punctual_week
+            ].shape[0]
+            return f"⏰ Your most punctual week was Week {most_punctual_week}, with {hours_in_week} hours of lectures. Well done!"
 
         if rand == 4:
             runtimes = {
                 "the Star Wars movies": 26,
-                "the Harry Potter series ": 19,
-                "the LOTR movies": 9,
+                "the Harry Potter series": 19,
+                "the Lord of the Rings movies": 9,
                 "the X-Men franchise": 22,
                 "Suits": 83,
                 "Breaking Bad": 62,
@@ -248,13 +255,14 @@ def fun_fact(attendance_df):
                 "Friends": 89,
                 "Stranger Things": 35,
             }
-            rand_series = random.choice(list(runtimes.keys()))
-            if spent_in_lec // runtimes[rand_series] == 0:
-                return f"😱 You’ve spent so much time in class, you couldn’t even watch {rand_series} once! Time to cut back on lectures... just kidding!"
-            return f"🎬 You could have binge-watched {rand_series} {str(num2words(spent_in_lec // runtimes[rand_series])).title()} times with the hours you've spent in class. That’s some serious classroom dedication!"
+            random_series, runtime = random.choice(list(runtimes.items()))
+            binge_count = hours_in_lectures // runtime
+            if binge_count > 0:
+                return f"🎬 You could have binge-watched {random_series} {num2words(binge_count).title()} times with your lecture hours. Impressive focus!"
+            return f"😱 You’ve spent so much time in lectures, you couldn’t even finish {random_series} once!"
 
         if rand == 5:
-            time_taken = {
+            travel_times = {
                 "Kashmir to Kanyakumari": 61,
                 "Mumbai to Delhi": 25,
                 "Mumbai to Bangalore": 18,
@@ -263,34 +271,42 @@ def fun_fact(attendance_df):
                 "Mumbai to Ahmedabad": 10,
                 "Mumbai to Jaipur": 21,
             }
-            rand_trip = random.choice(list(time_taken.keys()))
-            if spent_in_lec < time_taken[rand_trip]:
-                return f"🚗 You haven’t even spent enough time in class to drive from {rand_trip}. Maybe next semester!"
-            return f"🌍 In the time you’ve spent in class, you could have driven from {rand_trip} {str(num2words(spent_in_lec // time_taken[rand_trip])).title()} times. Road trip, anyone?"
+            random_trip, travel_time = random.choice(list(travel_times.items()))
+            trip_count = hours_in_lectures // travel_time
+            if trip_count > 0:
+                return f"🌍 In your lecture hours, you could have driven from {random_trip} {num2words(trip_count).title()} times!"
+            return f"🚗 You haven’t spent enough time in class to complete a drive from {random_trip} yet. Keep going!"
 
         if rand == 6:
-            if spent_in_lec < 24:
-                return f"📚 You’ve spent {spent_in_lec} hours in class. That’s like reading a book for a whole day! Keep up the good work!"
-
-            if spent_in_lec < (20 * 24):
-                return f"📚 You’ve spent {spent_in_lec // 24} days attending lectures!"
-
-            if spent_in_lec < (30 * 24):
-                return f"📚 You’ve spent {spent_in_lec // 24} days in class. That’s almost a month of pure learning!"
-
-            return f"🗓️ You've spent a total of {spent_in_lec // 24} days in class. That’s a lot!"
+            days_in_class = hours_in_lectures // 24
+            if days_in_class < 1:
+                return f"📚 You’ve spent {hours_in_lectures} hours in lectures."
+            elif days_in_class < 30:
+                return f"📚 You’ve spent {days_in_class} days attending lectures. Almost a month of learning!"
+            return f"🗓️ You've spent a total of {days_in_class} days in class. That's dedication!"
 
         if rand == 7:
-            time_to_moon = 69
-            if spent_in_lec < time_to_moon:
-                time_left = time_to_moon - spent_in_lec
-                return f"🌕 You’ve spent {spent_in_lec} hours in class. You're only {time_left} hours away from the moon. Almost there!"
-            return f"🚀 You’ve spent {spent_in_lec} hours in class. In fact, you could have traveled to the moon {str(num2words(spent_in_lec // time_to_moon)).title()} times! Astronaut-level attendance!"
+            trips_to_moon = hours_in_lectures // 69
+            if trips_to_moon > 0:
+                return f"🚀 You could have traveled to the moon {num2words(trips_to_moon).title()} times with your lecture hours!"
+            return f"🌕 You’ve spent {hours_in_lectures} hours in class. Only {69 - hours_in_lectures} hours away from reaching the moon!"
+
+        if rand == 8:
+            launches = hours_in_lectures // 10
+            if launches > 0:
+                return f"🚀 You've spent enough time in lectures to power {launches} satellite launches to orbit. Astronomical dedication!"
+            return "🌌 Your lecture hours are climbing, but not enough to launch a satellite yet. Keep attending – the stars are waiting!"
+        if rand == 9:
+            coffee_cups = int(hours_in_lectures // 0.25)
+            if coffee_cups > 0:
+                return f"☕ With your lecture hours, you could have brewed and enjoyed {coffee_cups} cups of coffee. That’s some serious caffeine-fueled learning!"
+            return "🍵 You haven’t spent enough time in lectures to enjoy even a cup of coffee yet. Let’s get brewing with more attendance!"
+
     except Exception as e:
-        return f"🎉 You're doing great! Keep up the good work!"
+        return "🎉 You're doing great! Keep up the good work!"
 
 
-def get_attendance_df(soup, semester):
+def get_attendance_df(soup):
     """Converts attendance data from HTML into a DataFrame."""
     try:
         attendance_list = soup.select("div.studAttList tbody tr")
@@ -308,21 +324,6 @@ def get_attendance_df(soup, semester):
 
         # Convert to DataFrame and filter dates
         attendance_df = pd.DataFrame(rows, columns=["Subject", "Date", "Present"])
-
-        last_date = attendance_df["Date"].max()
-        start_date = (
-            datetime(last_date.year, 7, 1)
-            if semester in ["First", "Third", "Fifth", "Seventh", "Ninth", "Eleventh"]
-            else datetime(last_date.year, 1, 1)
-        )
-        end_date = (
-            datetime(last_date.year, 12, 31)
-            if start_date.month == 7
-            else datetime(last_date.year, 6, 30)
-        )
-        attendance_df = attendance_df[
-            (attendance_df["Date"] >= start_date) & (attendance_df["Date"] <= end_date)
-        ]
 
         # Standardize subject names
         subjects = []
@@ -351,59 +352,78 @@ def get_attendance_df(soup, semester):
         return (
             attendance_df.sort_values(by="Date"),
             attendance_list[0].find_all("td")[1].text,
-            start_date,
         )
 
     except Exception as e:
         raise ValueError(f"(VE-5) Failed to extract attendance data: {e}") from e
 
 
-def generate_report(soup):
+def generate_report(soup, prev):
     """Generates attendance summary."""
     name, roll_no, program, semester = get_user_details(soup)
-    attendance_df, sap_id, start_date = get_attendance_df(soup, semester)
+    attendance_df_full, sap_id = get_attendance_df(soup)
+
+    if prev and semester != "First":
+        semester = list(SEMESTER_MAP.values())[
+            list(SEMESTER_MAP.values()).index(semester) - 1
+        ]
 
     try:
-        # Build attendance summary
-        out_data = []
-        for subject in attendance_df["Subject"].unique():
-            present_count = int(
-                attendance_df[attendance_df["Subject"] == subject]["Present"].sum()
-            )
-            total_count = int(
-                attendance_df[attendance_df["Subject"] == subject].shape[0]
-            )
-            percentage = round((present_count / total_count) * 100, 2)
-            if percentage < 80:
-                delta_to_eighty = -math.ceil(
-                    (round(0.8 * total_count, 2) - present_count) / 0.2
-                )
+        # Filter attendance data by semester
+        last_date = attendance_df_full["Date"].max()
+        if semester in ["First", "Third", "Fifth", "Seventh", "Ninth", "Eleventh"]:
+            start_date = datetime(last_date.year, 6, 1)
+            end_date = datetime(last_date.year, 11, 30)
+        else:
+            if last_date.month == 12:
+                start_date = datetime(last_date.year, 12, 1)
+                end_date = datetime(last_date.year + 1, 5, 31)
             else:
-                delta_to_eighty = math.floor(
-                    (present_count - round(0.8 * total_count, 2)) / 0.8
+                start_date = datetime(last_date.year - 1, 12, 1)
+                end_date = datetime(last_date.year, 5, 31)
+
+        attendance_df = attendance_df_full[
+            (attendance_df_full["Date"] >= start_date)
+            & (attendance_df_full["Date"] <= end_date)
+        ].copy()
+
+        out_data = []
+        if not prev and (attendance_df["Date"].max() < last_date or attendance_df.empty):
+            start_date = start_date.replace(year=start_date.year + 1)
+            attendance_df = pd.DataFrame(columns=["Subject", "Date", "Present"])
+            date_range = "N/A - N/A"
+            funfact = "Uh-oh! Looks like you haven't attended any lectures this semester. Attend a few and check back."
+        else:
+            # Build attendance summary
+            for subject in attendance_df["Subject"].unique():
+                present_count = int(
+                    attendance_df[attendance_df["Subject"] == subject]["Present"].sum()
                 )
-            out_data.append(
-                {
-                    "Subject": subject,
-                    "Present": present_count,
-                    "Total": total_count,
-                    "Percentage": percentage,
-                    "DeltaToEighty": delta_to_eighty,
-                }
-            )
+                total_count = int(
+                    attendance_df[attendance_df["Subject"] == subject].shape[0]
+                )
+                percentage = round((present_count / total_count) * 100, 2)
+                if percentage < 80:
+                    delta_to_eighty = -math.ceil(
+                        (round(0.8 * total_count, 2) - present_count) / 0.2
+                    )
+                else:
+                    delta_to_eighty = math.floor(
+                        (present_count - round(0.8 * total_count, 2)) / 0.8
+                    )
+                out_data.append(
+                    {
+                        "Subject": subject,
+                        "Present": present_count,
+                        "Total": total_count,
+                        "Percentage": percentage,
+                        "DeltaToEighty": delta_to_eighty,
+                    }
+                )
+            date_range = f"{attendance_df['Date'].min().strftime('%d.%m.%Y')} - {attendance_df['Date'].max().strftime('%d.%m.%Y')}"
+            funfact = fun_fact(attendance_df.copy())
 
         # Build Attendance Heatmap data using full attendance data
-        if semester != "First":
-            previous_semester = SEMESTER_MAP[
-                list(SEMESTER_MAP.keys())[
-                    list(SEMESTER_MAP.values()).index(semester) - 1
-                ]
-            ]
-            attendance_df_full = pd.concat(
-                [get_attendance_df(soup, previous_semester)[0], attendance_df]
-            )
-        else:
-            attendance_df_full = attendance_df.copy()
         attendance_heatmap_data = (
             attendance_df_full.drop(columns=["Subject"])
             .assign(Date=pd.to_datetime(attendance_df_full["Date"]).dt.date)
@@ -422,12 +442,6 @@ def generate_report(soup):
                 )
             }
 
-        date_range = (
-            f"{attendance_df['Date'].min().strftime('%d.%m.%Y')} - {attendance_df['Date'].max().strftime('%d.%m.%Y')}"
-            if not attendance_df.empty
-            else "N/A - N/A"
-        )
-
         return {
             "Name": name,
             "SapID": sap_id,
@@ -438,7 +452,7 @@ def generate_report(soup):
                 "Start": start_date.strftime("%m-%d-%Y"),
             },
             "Attendance": {
-                "FunFact": fun_fact(attendance_df.copy()),
+                "FunFact": funfact,
                 "Range": date_range,
                 "Data": out_data,
                 "RawCSV": attendance_df.to_csv(index=False),
@@ -449,7 +463,7 @@ def generate_report(soup):
         raise ValueError(f"(VE-6) Failed to generate attendance report: {e}") from e
 
 
-def get_attendance(username, password):
+def get_attendance(username, password, prev):
     """Fetches attendance by logging in and parsing the attendance page."""
     s = requests.Session()
     try:
@@ -492,7 +506,7 @@ def get_attendance(username, password):
             )
 
         college_name = re.match(SVKM_URLS["college"], r.url).group(1)
-        if college_name != "MPSTME-NM-M":
+        if "MPSTME" not in college_name:
             raise ValueError(
                 f"(VE-10) Unsupported College: {college_name}. This service is only available for MPSTME students."
             )
@@ -520,7 +534,7 @@ def get_attendance(username, password):
     finally:
         s.close()
 
-    return generate_report(soup)
+    return generate_report(soup, prev)
 
 
 @app.route("/", methods=["GET"])
@@ -542,7 +556,10 @@ def attendance():
     try:
         turnstile_verify(request)
         username, password = validate_request(request)
-        data = get_attendance(username, password)
+        if request.args.get("p") == "true":
+            data = get_attendance(username, password, True)
+        else:
+            data = get_attendance(username, password, False)
         log(request.headers.get("User-Agent"), start_time, "None")
         return jsonify({"message": "Success", "data": data})
 
@@ -560,4 +577,11 @@ def attendance():
 
     except Exception as err:
         log(request.headers.get("User-Agent"), start_time, str(err))
-        return jsonify({"error": f"(GE-1) An unexpected error occurred! Please try again later."}), 500
+        return (
+            jsonify(
+                {
+                    "error": f"(GE-1) An unexpected error occurred! Please try again later."
+                }
+            ),
+            500,
+        )

@@ -4,20 +4,19 @@
 <head>
   <meta charset="UTF-8">
   <title>MPSTME | Attendance Report</title>
-  <meta name="description" content="Tired of logging into the SVKM portal? Get your MPSTME attendance report in seconds with this free, FOSS tool! See your attendance breakdown clearly and avoid any surprises.">
-  <meta name="keywords" content="MPSTME Attendance, SVKM Attendance,  Attendance Report Generator, NMIMS,  Free, Open Source,  Download">
+  <meta name="description"
+    content="Tired of logging into the SVKM portal? Get your MPSTME attendance report in seconds with this free, FOSS tool! See your attendance breakdown clearly and avoid any surprises.">
+  <meta name="keywords"
+    content="MPSTME Attendance, SVKM Attendance, Attendance Report Generator, NMIMS, Free, Open Source, Download">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="darkreader-lock">
   <meta property="og:site_name" content="MPSTME Attendance Report">
   <meta property="og:title" content="MPSTME | Attendance Report">
-  <meta property="og:description" content="Tired of logging into the SVKM portal? Get your MPSTME attendance report in seconds with this free, FOSS tool! See your attendance breakdown clearly and avoid any surprises.">
+  <meta property="og:description"
+    content="Tired of logging into the SVKM portal? Get your MPSTME attendance report in seconds with this free, FOSS tool! See your attendance breakdown clearly and avoid any surprises.">
   <meta property="og:url" content="https://report.adith.tech">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://report.adith.tech/assets/og-image.jpg">
-  <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:title" content="MPSTME Attendance Report">
-  <meta property="twitter:description" content="Tired of logging into the SVKM portal? Get your MPSTME attendance report in seconds with this free, FOSS tool! See your attendance breakdown clearly and avoid any surprises.">
-  <meta property="twitter:image" content="https://report.adith.tech/assets/og-image.jpg">
-  <meta property="twitter:url" content="https://report.adith.tech">
   <link href="/favicon.ico" rel="icon">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload"
@@ -55,7 +54,8 @@
             <div class="logo-container">
               <i>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
-                  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"/>
+                  <path
+                    d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8" />
                 </svg>
               </i>
               GitHub Repo
@@ -68,122 +68,125 @@
         <!-- Login Container Start -->
         <div class="container-fluid pt-4 px-4">
           <div class="row justify-content-center">
-            <div class="col-12 col-md-9 col-lg-8 col-xl-4">
-              <div class="bg-secondary rounded h-100 p-4 overflow-auto">
-                <form id="attendance-form">
-                  <div class="mb-3">
-                    <label for="sapid" class="form-label">SAP ID</label>
-                    <input type="text" class="form-control" id="sapid" required>
-                  </div>
-                  <div class="mb-3">
-                    <label for="password" class="form-label">Portal Password</label>
-                    <input type="password" class="form-control" id="password" required minlength="8">
-                  </div>
-                  <div class="mb-3 form-check user-select-none">
-                    <input type="checkbox" class="form-check-input" id="password-toggle">
-                    <label class="form-check-label" for="password-toggle">Show Password</label>
-                  </div>
-                  <div class="mb-3 d-flex justify-content-center">
-                    <div class="cf-turnstile"></div>
-                  </div>
-                  <div class="d-flex justify-content-center">
-                    <button type="submit" class="btn btn-primary" id="submit">Get Attendance</button>
-                  </div>
-                  <div class="d-flex justify-content-center mt-2">
-                    <div id="error-message" class="text-danger mt-2 d-none"></div>
-                    <div id="loading-message" class="mt-2 d-none">Please wait, this might take up to 30
-                      seconds...</div>
-                  </div>
-                </form>
-              </div>
+            <div class="col-12 col-md-9 col-lg-8 col-xl-4 bg-secondary rounded h-100 p-4 overflow-auto">
+              <form id="attendance-login-form">
+                <div class="mb-3">
+                  <label for="username" class="form-label">SAP ID</label>
+                  <input type="text" class="form-control" id="username" required>
+                </div>
+                <div class="mb-3">
+                  <label for="semester" class="form-label">Semester</label>
+                  <select class="form-select" id="semester" required>
+                    <option value="false">Current Semester</option>
+                    <option value="true">Previous Semester</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label for="password" class="form-label">Portal Password</label>
+                  <input type="password" class="form-control" id="password" required minlength="8">
+                </div>
+                <div class="mb-3 form-check user-select-none">
+                  <input type="checkbox" class="form-check-input" id="password-toggle">
+                  <label class="form-check-label" for="password-toggle">Show Password</label>
+                </div>
+                <div class="mb-3 d-flex justify-content-center">
+                  <div class="cf-turnstile"></div>
+                </div>
+                <div class="d-flex justify-content-center">
+                  <button type="submit" class="btn btn-primary" id="submit">Get Attendance</button>
+                </div>
+                <div class="d-flex justify-content-center mt-2">
+                  <div id="error-message" class="text-danger mt-2 d-none"></div>
+                  <div id="loading-message" class="mt-2 d-none">Please wait, this might take up to 30
+                    seconds...</div>
+                </div>
+              </form>
             </div>
           </div>
         </div>
         <!-- Login Container End -->
 
         <!-- Attendance Report Container Start -->
-        <div class="pt-2 pb-5 mt-4 d-none" id="attendance-report-container">
-          <div class="row justify-content-center">
-            <div class="col-12 col-md-10 col-xl-8">
-              <div class="container-fluid pt-4">
-                <div class="bg-secondary rounded h-100 p-4 overflow-x-auto">
-                  <h6 class="mb-4 text-center text-main">User Details</h6>
+        <div class="pt-2 pb-5 mt-4 row justify-content-center d-none" id="attendance-report-container">
+          <div class="col-12 col-md-10 col-xl-8">
+            <div class="container-fluid pt-4">
+              <div class="bg-secondary rounded h-100 p-4">
+                <h6 class="mb-4 text-center text-main">User Details</h6>
+                <div class="overflow-x-auto">
                   <table class="table table-user" id="user-details">
                     <tbody></tbody>
                   </table>
                 </div>
               </div>
-              <div class="container-fluid pt-4">
-                <div class="bg-secondary rounded h-100 p-4">
-                  <div class="rounded h-100">
-                    <h6 class="mb-4 text-center text-main">Attendance Chart</h6>
-                    <div class="d-flex justify-content-center">
-                      <div class="heatmap-container">
-                        <div class="heatmap-wrapper">
-                          <div id="attendance-heatmap" class="overflow-x-auto"></div>
-                          <div id="attendance-legend" class="legend-container">
-                            <span class="legend-label">Less</span>
-                            <div class="legend-box" style="background-color: #2d333b;"></div>
-                            <div class="legend-box" style="background-color: #9a1316;"></div>
-                            <div class="legend-box" style="background-color: #ca0a0c;"></div>
-                            <div class="legend-box" style="background-color: #e90405;"></div>
-                            <div class="legend-box" style="background-color: #ff0000;"></div>
-                            <span class="legend-label">More</span>
-                          </div>
-                        </div>
-                      </div>
+            </div>
+            <div class="container-fluid pt-4">
+              <div class="bg-secondary rounded h-100 p-4">
+                <h6 class="mb-4 text-center text-main">Attendance Heatmap</h6>
+                <div class="d-flex justify-content-center heatmap-container">
+                  <div class="heatmap-wrapper overflow-x-hidden">
+                    <div id="attendance-heatmap" class="overflow-x-auto"></div>
+                    <div id="attendance-legend" class="legend-container">
+                      <span class="legend-label">Less</span>
+                      <div class="legend-box" style="background-color: #2d333b;"></div>
+                      <div class="legend-box" style="background-color: #9a1316;"></div>
+                      <div class="legend-box" style="background-color: #ca0a0c;"></div>
+                      <div class="legend-box" style="background-color: #e90405;"></div>
+                      <div class="legend-box" style="background-color: #ff0000;"></div>
+                      <span class="legend-label">More</span>
                     </div>
-                  </div>
-                  <div class="text-center mt-4">
-                    <p id="funfact" class="text-muted"></p>
                   </div>
                 </div>
+                <div class="text-center mt-4">
+                  <p id="funfact" class="text-muted"></p>
+                </div>
               </div>
-              <div class="container-fluid pt-4">
-                <div class="bg-secondary rounded h-100 p-4">
-                  <h6 class="mb-4 text-center w-100 text-main">Attendance Report</h6>
-                  <div class="overflow-x-auto">
-                    <table class="table table-bordered table-hover" id="attendance-table">
-                      <thead>
-                        <tr>
-                          <th>Subject</th>
-                          <th>Present</th>
-                          <th>Total</th>
-                          <th>Percentage</th>
-                          <th>
-                            Adjustment
-                            <button class="tooltip-button"
-                              data-tooltip="The number indicates how many classes you need to attend (negative) or can miss (positive) to stay above 80% attendance.">
-                              <i>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
-                                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                                  <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
-                                </svg>
-                              </i>
-                            </button>
-                          </th>
-                          <th>
-                            Medical
-                            <button class="tooltip-button"
-                              data-tooltip-medical="Add the number of medical leaves you have submitted for this subject.">
-                              <i>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
-                                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                                  <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
-                                </svg>
-                              </i>
-                            </button>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody></tbody>
-                    </table>
-                  </div>
-                  <div class="d-flex justify-content-between align-items-center mt-2">
-                    <div class="d-flex justify-content-start w-100">
-                      <button class="btn btn-primary btn-sm ms-auto" id="export-csv">Download Raw CSV</button>
-                    </div>
-                  </div>
+            </div>
+            <div class="container-fluid pt-4">
+              <div class="bg-secondary rounded h-100 p-4">
+                <h6 class="mb-4 text-center w-100 text-main">Attendance Report</h6>
+                <div class="overflow-x-auto">
+                  <table class="table table-bordered table-hover" id="attendance-table">
+                    <thead>
+                      <tr>
+                        <th>Subject</th>
+                        <th>Present</th>
+                        <th>Total</th>
+                        <th>Percentage</th>
+                        <th>
+                          Adjustment
+                          <button class="tooltip-button"
+                            data-tooltip="The number indicates how many classes you need to attend (negative) or can miss (positive) to stay above 80% attendance.">
+                            <i>
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-info-circle"
+                                viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                <path
+                                  d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+                              </svg>
+                            </i>
+                          </button>
+                        </th>
+                        <th>
+                          Medical
+                          <button class="tooltip-button"
+                            data-tooltip-medical="Add the number of medical leaves you have submitted for this subject.">
+                            <i>
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-info-circle"
+                                viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                <path
+                                  d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+                              </svg>
+                            </i>
+                          </button>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+                <div class="d-flex justify-content-start align-items-center mt-2 w-100">
+                  <button class="btn btn-primary btn-sm ms-auto" id="export-csv">Download Raw CSV</button>
                 </div>
               </div>
             </div>
@@ -192,16 +195,18 @@
         <!-- Attendance Report Container End -->
 
         <!-- Footer Start -->
-        <footer class="bg-dark text-center py-3 footer">
-          &copy; <a rel="noopener" href="https://github.com/ItsSpirax" target="_blank">Adith R</a>, All Rights Reserved.
+        <footer class="text-center py-3 footer">
+          &copy; <a rel="noopener" href="https://github.com/ItsSpirax" target="_blank">Adith</a>, All Rights Reserved.
         </footer>
         <!-- Footer End -->
       </div>
 
       <a href="#top" class="btn btn-lg btn-primary btn-lg-square back-to-top" aria-label="Back to Top">
         <i>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor" stroke-width="0.5" class="bi bi-arrow-up" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5"/>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor" stroke-width="0.5"
+            class="bi bi-arrow-up" viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+              d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5" />
           </svg>
         </i>
       </a>
@@ -210,17 +215,17 @@
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" data-cfasync="false"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/cal-heatmap.min.js" defer></script>
-  <script src=" https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js "></script>
+  <script src=" https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/plugins/Tooltip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/plugins/CalendarLabel.min.js"></script>
   <script>
-    let SAPIDTimeoutId, passwordTimeoutId, widgetID, isSmallScreen;
+    let SAPIDTimeoutId, passwordTimeoutId, widgetID, isSmallScreen, heatmapData, heatmapStartDate;
     setTimeout(() => document.getElementById('spinner')?.classList.remove('show'), 1);
     widgetID = turnstile.ready(function () {
       turnstile.render(".cf-turnstile", {
         sitekey: "0x4AAAAAAAx-ANXhF-Birz5X",
         theme: "dark",
-        size: "flexible",
+        size: window.matchMedia('(max-width: 430px)').matches ? "compact" : "normal",
         "expired-callback": captchaExpired,
       });
     });
@@ -235,7 +240,7 @@
       togglePassword.classList.toggle('show', password.type === 'text');
     });
     const submitButton = document.getElementById('submit');
-    document.getElementById('attendance-form').addEventListener('keypress', (event) => {
+    document.getElementById('attendance-login-form').addEventListener('keypress', (event) => {
       if (event.key === 'Enter') {
         event.preventDefault();
         submitButton.click();
@@ -243,7 +248,7 @@
     });
     submitButton.addEventListener('click', async (event) => {
       event.preventDefault();
-      const username = document.getElementById('sapid');
+      const username = document.getElementById('username');
       const password = document.getElementById('password');
       const errorMessage = document.getElementById('error-message');
       const loadingMessage = document.getElementById('loading-message');
@@ -269,7 +274,8 @@
       submitButton.innerHTML = `Generating Report&nbsp;&nbsp;<div class="spinner-border spinner-border-sm" role="status"></div>`;
       loadingMessage.classList.remove('d-none');
       try {
-        const response = await fetch('https://report-api.adith.tech/v1/getAttendanceReport', {
+        var param = document.getElementById('semester').value === 'true' ? `?p=true` : '';
+        const response = await fetch('https://report-api.adith.tech/v1/getAttendanceReport' + param, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -287,11 +293,14 @@
         }
         displayUserDetails(data.data);
         renderAttendanceTable(data.data);
+        isSmallScreen = null;
+        heatmapData = data.data.Attendance.Heatmap;
+        heatmapStartDate = data.data.Semester.Start;
         const resizeHandler = () => {
           const newIsSmallScreen = window.matchMedia('(max-width: 1196px)').matches;
           if (newIsSmallScreen !== isSmallScreen) {
             isSmallScreen = newIsSmallScreen;
-            renderAttendanceChart(data.data.Attendance.Heatmap, new Date(data.data.Semester.Start));
+            renderAttendanceChart(heatmapData, heatmapStartDate);
           }
         };
         resizeHandler();
@@ -354,6 +363,17 @@
       const attendanceTableBody = document.querySelector('#attendance-table tbody');
       const funfact = document.getElementById('funfact');
       const downloadCSV = document.getElementById('export-csv');
+      funfact.textContent = data.Attendance.FunFact;
+      if (data.Attendance.Data.length === 0) {
+        attendanceTableBody.innerHTML = `
+                <tr>
+                  <td colspan="6" class="text-center">No attendance data available for this semester.</td>
+                </tr>
+                `;
+        downloadCSV.style.display = 'none';
+        return;
+      }
+      downloadCSV.style.display = 'block';
       downloadCSV.addEventListener('click', () => {
         const csvData = new Blob([data.Attendance.RawCSV], {
           type: 'text/csv'
@@ -415,7 +435,6 @@
         medicalCell.appendChild(medicalInput);
         row.style.color = Percentage < 80 ? '#de0a26' : Percentage === 100 ? '#32cd32' : '#dcdcdc';
       });
-      funfact.textContent = data.Attendance.FunFact;
     }
 
     function renderAttendanceChart(data, startDate) {
@@ -425,7 +444,7 @@
         date: new Date(Number(timestamp)),
         value: value,
       }));
-
+      const dateStart = new Date(startDate);
       cal.paint({
         data: {
           source: formattedData,
@@ -433,7 +452,7 @@
           y: 'value',
         },
         date: {
-          start: isSmallScreen ? new Date(startDate.setMonth(startDate.getMonth() + 1)) : new Date(startDate.setMonth(startDate.getMonth() - 5)),
+          start: isSmallScreen ? new Date(dateStart.setMonth(dateStart.getMonth() + 1)) : new Date(dateStart.setMonth(dateStart.getMonth() - 5)),
         },
         range: isSmallScreen ? 6 : 12,
         theme: 'dark',
@@ -449,7 +468,7 @@
           type: 'month',
           gutter: 4,
           label: {
-            text: 'MMM',
+            text: "MMM YY",
             textAlign: 'start',
             position: 'top'
           },
