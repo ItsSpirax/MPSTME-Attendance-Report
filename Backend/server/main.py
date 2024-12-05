@@ -144,13 +144,13 @@ def validate_request(req):
     return username, password
 
 
-def log(ua, start_time, error="None"):
+def log(ua, start_time, error="No Error"):
     """Logs the message with a timestamp."""
     try:
         log_url = os.environ["LOGGING_URL"]
         if not log_url:
             return
-        time_taken = str(datetime.now() - start_time)
+        time_taken = str(round((datetime.now() - start_time).total_seconds(), 2))
         requests.get(
             f"{log_url}?ua={ua}&time={time_taken}&error={error}",
             timeout=0.5,
@@ -560,7 +560,7 @@ def attendance():
             data = get_attendance(username, password, True)
         else:
             data = get_attendance(username, password, False)
-        log(request.headers.get("User-Agent"), start_time, "None")
+        log(request.headers.get("User-Agent"), start_time)
         return jsonify({"message": "Success", "data": data})
 
     except ValueError as value_err:

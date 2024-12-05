@@ -3,6 +3,8 @@
 
 This repository contains the code for a web application that allows NMIMS students to easily check their latest attendance records. The application fetches attendance data from the SVKM portal and displays it in a user-friendly format.
 
+This web application has been hosted on Cloudflare Pages and Vercel for easy access.
+
 **Note:** This project is for educational purposes only. Use it responsibly and at your own risk.
 
 #### Try it out: [https://report.adith.tech](https://report.adith.tech)
@@ -12,7 +14,7 @@ This repository contains the code for a web application that allows NMIMS studen
 * Fetches up to date attendance data from the SVKM portal.
 * Displays attendance summary with subject-wise breakdown and graphical representation.
 * Encrypts user credentials before sending them to the backend.
-* Does not store user credentials or attendance data. Logs user agent, college name and errors only for debugging purposes.
+* Does not store user credentials or attendance data. Logs user agent only for debugging purposes.
 * Simple and easy-to-use interface.
 
 ## Demo
@@ -69,7 +71,6 @@ This repository contains the code for a web application that allows NMIMS studen
 5.  **Deploy the frontend:**
 
     *   The frontend can be deployed to any web server.
-    *   The repository is hosted on Cloudflare Pages.
 
 ## Usage
 
