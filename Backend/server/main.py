@@ -449,7 +449,7 @@ def generate_report(soup, prev):
             "Program": program,
             "Semester": {
                 "Name": semester,
-                "Start": start_date.strftime("%m-%d-%Y"),
+                "Start": start_date.strftime("%Y-%m-%d"),
             },
             "Attendance": {
                 "FunFact": funfact,
