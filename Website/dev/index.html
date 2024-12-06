@@ -453,7 +453,7 @@
           y: 'value',
         },
         date: {
-          start: isSmallScreen ? new Date(dateStart.setMonth(dateStart.getMonth() + 1)) : new Date(dateStart.setMonth(dateStart.getMonth() - 5)),
+          start: isSmallScreen ? dateStart : new Date(dateStart.setMonth(dateStart.getMonth() - 6)),
         },
         range: isSmallScreen ? 6 : 12,
         theme: 'dark',
