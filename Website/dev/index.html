@@ -220,7 +220,13 @@
   <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/plugins/Tooltip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/plugins/CalendarLabel.min.js"></script>
   <script>
+    const urlParams = new URLSearchParams(window.location.search);
     let SAPIDTimeoutId, passwordTimeoutId, widgetID, isSmallScreen, heatmapData, heatmapStartDate;
+    function captchaExpired() {
+      turnstile.reset(widgetID);
+    }
+    document.getElementById('username').value = (urlParams).get('u') || '';
+    document.getElementById('semester').value = ['true', 'false'].includes((urlParams).get('p')) ? (urlParams).get('p') : 'false';
     setTimeout(() => document.getElementById('spinner')?.classList.remove('show'), 1);
     widgetID = turnstile.ready(function () {
       turnstile.render(".cf-turnstile", {
@@ -230,10 +236,6 @@
         "expired-callback": captchaExpired,
       });
     });
-
-    function captchaExpired() {
-      turnstile.reset(widgetID);
-    }
     const togglePassword = document.getElementById('password-toggle');
     togglePassword.checked = false;
     togglePassword.addEventListener('click', () => {
