@@ -64,11 +64,12 @@
         </div>
       </nav>
       <!-- Navbar End -->
+      <div id="tsparticles" class="fixed-container z-index--1"></div>
       <div id="wrapper">
         <!-- Login Container Start -->
         <div class="container-fluid pt-4 px-4">
           <div class="row justify-content-center">
-            <div class="col-12 col-md-9 col-lg-8 col-xl-4 bg-secondary rounded h-100 p-4 overflow-auto">
+            <div class="col-12 col-md-9 col-lg-8 col-xl-4 bg-secondary rounded h-100 p-4 overflow-auto z-index-0">
               <form id="attendance-login-form">
                 <div class="mb-3">
                   <label for="username" class="form-label">SAP ID</label>
@@ -108,7 +109,7 @@
 
         <!-- Attendance Report Container Start -->
         <div class="pt-2 pb-5 mt-4 row justify-content-center d-none" id="attendance-report-container">
-          <div class="col-12 col-md-10 col-xl-8">
+          <div class="col-12 col-md-10 col-xl-8 z-index-0">
             <div class="container-fluid pt-4">
               <div class="bg-secondary rounded h-100 p-4">
                 <h6 class="mb-4 text-center text-main">User Details</h6>
@@ -219,6 +220,8 @@
   <script src=" https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/plugins/Tooltip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/plugins/CalendarLabel.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/@tsparticles/preset-stars@3.2.0/tsparticles.preset.stars.bundle.min.js"></script>
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     let SAPIDTimeoutId, passwordTimeoutId, widgetID, isSmallScreen, heatmapData, heatmapStartDate;
@@ -227,6 +230,24 @@
     }
     document.getElementById('username').value = (urlParams).get('u') || '';
     document.getElementById('semester').value = ['true', 'false'].includes((urlParams).get('p')) ? (urlParams).get('p') : 'false';
+    (async () => {
+      await loadStarsPreset(tsParticles);
+
+      await tsParticles.load({
+        id: "tsparticles",
+        options: {
+          background: {
+            color: {
+              value: "#010409"
+            }
+          },
+          particles: {
+            color: "#E8E8E8",
+          },
+          preset: "stars",
+        },
+      });
+    })();
     setTimeout(() => document.getElementById('spinner')?.classList.remove('show'), 1);
     widgetID = turnstile.ready(function () {
       turnstile.render(".cf-turnstile", {
