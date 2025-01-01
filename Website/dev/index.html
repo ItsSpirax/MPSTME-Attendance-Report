@@ -399,17 +399,16 @@
         return;
       }
       downloadCSV.style.display = 'block';
-      downloadCSV.addEventListener('click', () => {
-        const csvData = new Blob([data.Attendance.RawCSV], {
-          type: 'text/csv'
-        });
+      const newDownloadCSV = downloadCSV.cloneNode(true);
+      downloadCSV.parentNode.replaceChild(newDownloadCSV, downloadCSV);
+      newDownloadCSV.addEventListener('click', () => {
+        const csvData = new Blob([data.Attendance.RawCSV], { type: 'text/csv' });
         const csvURL = URL.createObjectURL(csvData);
         const tempLink = document.createElement('a');
         tempLink.href = csvURL;
         tempLink.setAttribute('download', `${data.SapID} (${data.Attendance.Range}).csv`);
         tempLink.click();
         URL.revokeObjectURL(csvURL);
-        tempLink.remove();
       });
       attendanceTableBody.innerHTML = '';
       data.Attendance.Data.forEach(({

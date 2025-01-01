@@ -211,9 +211,9 @@ def fun_fact(attendance_df):
             return f"🎉 Wow! Your longest streak of attendance is {max_streak} days. Keep that momentum going!"
 
         if rand == 1:
-            busiest_date = attendance_df["Date"].dt.date.value_counts().idxmax()
-            lectures_on_date = attendance_df[
-                attendance_df["Date"].dt.date == busiest_date
+            busiest_date = present_df["Date"].dt.date.value_counts().idxmax()
+            lectures_on_date = present_df[
+                present_df["Date"].dt.date == busiest_date
             ].shape[0]
             return f"📅 Looks like {busiest_date.strftime('%d %B')} was your busiest day with {lectures_on_date} hours of lectures. Great effort!"
 
