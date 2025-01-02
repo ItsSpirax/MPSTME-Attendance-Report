@@ -388,7 +388,7 @@ def generate_report(soup, prev):
         ].copy()
 
         out_data = []
-        if not prev and (attendance_df["Date"].max() < last_date or attendance_df.empty):
+        if (not prev and (attendance_df["Date"].max() < last_date or attendance_df.empty)) or (prev and attendance_df.empty):
             start_date = start_date.replace(year=start_date.year + 1)
             attendance_df = pd.DataFrame(columns=["Subject", "Date", "Present"])
             date_range = "N/A - N/A"
