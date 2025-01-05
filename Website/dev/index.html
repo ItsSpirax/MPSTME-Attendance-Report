@@ -283,8 +283,8 @@
         errorMessage.classList.remove('d-none');
         return;
       }
-      if (!(password.value.length >= 8)) {
-        errorMessage.textContent = 'Password must be at least 8 characters long.';
+      if (password.value.length < 8 || password.value.length > 20) {
+        errorMessage.textContent = 'Please enter a valid password.';
         errorMessage.classList.remove('d-none');
         return;
       }

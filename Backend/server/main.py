@@ -138,7 +138,7 @@ def validate_request(req):
     if not username or not password:
         raise ValueError("(VE-1) Missing username or password.")
 
-    if not username.isdigit() or not 8 <= len(password) <= 16:
+    if not username.isdigit() or len(password) < 8 or len(password) > 20:
         raise ValueError("(VE-2) Invalid username or password.")
 
     return username, password
@@ -160,22 +160,6 @@ def log(ua, start_time, error="No Error"):
 
 
 # Main functions
-def get_user_details(soup):
-    """Extracts user details from BeautifulSoup parsed HTML content."""
-    try:
-        user_details = soup.find_all("div", class_="form-group")
-        return (
-            user_details[0].text.split(":")[1].strip().title(),  # Name
-            user_details[3].text.split(":")[1].strip(),  # Roll No
-            user_details[1].text.split(":")[1].split("-")[0].strip().title(),  # Program
-            SEMESTER_MAP[
-                user_details[2].text.split(":")[1].strip().split()[1]
-            ],  # Semester
-        )
-    except Exception as e:
-        raise ValueError(f"(VE-4) Failed to extract user details: {e}") from e
-
-
 def fun_fact(attendance_df):
     """Generates a fun fact based on the attendance data."""
     if attendance_df.shape[0] < 7:
@@ -306,7 +290,46 @@ def fun_fact(attendance_df):
         return "🎉 You're doing great! Keep up the good work!"
 
 
-def get_attendance_df(soup):
+def get_user_details(soup, prev):
+    """Extracts user details from BeautifulSoup parsed HTML content."""
+    try:
+        user_details = soup.find_all("div", class_="form-group")
+        semester = user_details[2].text.split(":")[1].strip().split()[1]
+        if prev and semester != "I":
+            semester = list(SEMESTER_MAP.keys())[
+                list(SEMESTER_MAP.keys()).index(semester) - 1
+            ]
+
+        return (
+            user_details[0].text.split(":")[1].strip().title(),  # Name
+            user_details[3].text.split(":")[1].strip(),  # Roll No
+            user_details[1].text.split(":")[1].split("-")[0].strip().title(),  # Program
+            semester,  # Semester
+        )
+    except Exception as e:
+        raise ValueError(f"(VE-4) Failed to extract user details: {e}") from e
+
+
+def get_subjects(soup, semester):
+    """Extracts user subjects from BeautifulSoup parsed HTML content."""
+    return [
+        SUBJECT_CODE_REGEX.split(subject)[0].strip()
+        for subject in re.findall(
+            r'<h6 class="text-uppercase mb-auto">(.*?)</h6>',
+            re.search(
+                r"if \(selected == 'Semester " + semester + r"'\) \{(.*?)\}",
+                str(soup),
+                re.DOTALL,
+            )
+            .group(1)
+            .strip(),
+            re.DOTALL,
+        )
+        if subject != ""
+    ]
+
+
+def get_attendance_dataframe(soup, subjects):
     """Converts attendance data from HTML into a DataFrame."""
     try:
         attendance_list = soup.select("div.studAttList tbody tr")
@@ -322,23 +345,27 @@ def get_attendance_df(soup):
             present = tds[7].text == "P"
             rows.append([subject, date, present])
 
-        # Convert to DataFrame and filter dates
-        attendance_df = pd.DataFrame(rows, columns=["Subject", "Date", "Present"])
+        # Convert to DataFrame
+        attendance_df_full = pd.DataFrame(rows, columns=["Subject", "Date", "Present"])
 
         # Standardize subject names
-        subjects = []
-        for sub in attendance_df["Subject"].unique():
-            for s in subjects:
+        combined_subjects = []
+
+        while subjects:
+            subject = subjects.pop(0)
+            group = [subject]
+            for other_subject in subjects[:]:
                 if (
-                    difflib.SequenceMatcher(None, sub, s).ratio()
+                    difflib.SequenceMatcher(None, subject, other_subject).ratio()
                     > DIFFLIB_RATIO_THRESHOLD
                 ):
-                    attendance_df["Subject"] = attendance_df["Subject"].replace(sub, s)
-                    break
-            else:
-                subjects.append(sub)
+                    group.append(other_subject)
+                    subjects.remove(other_subject)
+            combined_subjects.append(group)
 
-        attendance_df["Subject"] = attendance_df["Subject"].apply(
+        subjects = [max(group, key=len) for group in combined_subjects]
+
+        attendance_df_full["Subject"] = attendance_df_full["Subject"].apply(
             lambda x: (
                 difflib.get_close_matches(
                     x, subjects, n=1, cutoff=DIFFLIB_RATIO_THRESHOLD
@@ -349,7 +376,14 @@ def get_attendance_df(soup):
                 else x
             )
         )
+
+        # Filter out subjects
+        attendance_df = attendance_df_full[
+            attendance_df_full["Subject"].isin(subjects)
+        ].copy()
+
         return (
+            attendance_df_full.sort_values(by="Date"),
             attendance_df.sort_values(by="Date"),
             attendance_list[0].find_all("td")[1].text,
         )
@@ -358,43 +392,24 @@ def get_attendance_df(soup):
         raise ValueError(f"(VE-5) Failed to extract attendance data: {e}") from e
 
 
-def generate_report(soup, prev):
+def generate_report(attnSoup, subSoup, prev):
     """Generates attendance summary."""
-    name, roll_no, program, semester = get_user_details(soup)
-    attendance_df_full, sap_id = get_attendance_df(soup)
-
-    if prev and semester != "First":
-        semester = list(SEMESTER_MAP.values())[
-            list(SEMESTER_MAP.values()).index(semester) - 1
-        ]
+    name, roll_no, program, semester = get_user_details(attnSoup, prev)
+    subjects = get_subjects(subSoup, semester)
+    attendance_df_full, attendance_df, sap_id = get_attendance_dataframe(
+        attnSoup, subjects
+    )
 
     try:
-        # Filter attendance data by semester
-        last_date = attendance_df_full["Date"].max()
-        if semester in ["First", "Third", "Fifth", "Seventh", "Ninth", "Eleventh"]:
-            start_date = datetime(last_date.year, 6, 1)
-            end_date = datetime(last_date.year, 11, 30)
-        else:
-            if last_date.month == 12:
-                start_date = datetime(last_date.year, 12, 1)
-                end_date = datetime(last_date.year + 1, 5, 31)
-            else:
-                start_date = datetime(last_date.year - 1, 12, 1)
-                end_date = datetime(last_date.year, 5, 31)
-
-        attendance_df = attendance_df_full[
-            (attendance_df_full["Date"] >= start_date)
-            & (attendance_df_full["Date"] <= end_date)
-        ].copy()
-
         out_data = []
-        if (not prev and (attendance_df["Date"].max() < last_date or attendance_df.empty)) or (prev and attendance_df.empty):
-            start_date = start_date.replace(year=start_date.year + 1)
+        if attendance_df.empty:
+            start_date = attendance_df_full["Date"].min() + pd.DateOffset(months=5)
             attendance_df = pd.DataFrame(columns=["Subject", "Date", "Present"])
             date_range = "N/A - N/A"
             funfact = "Uh-oh! Looks like you haven't attended any lectures this semester. Attend a few and check back."
         else:
             # Build attendance summary
+            start_date = attendance_df["Date"].min() - pd.DateOffset(months=1)
             for subject in attendance_df["Subject"].unique():
                 present_count = int(
                     attendance_df[attendance_df["Subject"] == subject]["Present"].sum()
@@ -448,7 +463,7 @@ def generate_report(soup, prev):
             "RollNo": roll_no,
             "Program": program,
             "Semester": {
-                "Name": semester,
+                "Name": SEMESTER_MAP[semester],
                 "Start": start_date.strftime("%Y-%m-%d"),
             },
             "Attendance": {
@@ -511,12 +526,17 @@ def get_attendance(username, password, prev):
                 f"(VE-10) Unsupported College: {college_name}. This service is only available for MPSTME students."
             )
 
+        # Navigate to subject page
+        response = s.get(f"https://portal.svkm.ac.in/{college_name}/myCourseForm")
+        response.raise_for_status()
+        subSoup = BeautifulSoup(response.text, "lxml")
+
         # Navigate to attendance page
         response = s.get(
             f"https://portal.svkm.ac.in/{college_name}/viewDailyAttendanceByStudent"
         )
         response.raise_for_status()
-        soup = BeautifulSoup(response.text, "lxml")
+        attnSoup = BeautifulSoup(response.text, "lxml")
 
     except requests.exceptions.Timeout as e:
         raise ConnectionError(
@@ -534,7 +554,7 @@ def get_attendance(username, password, prev):
     finally:
         s.close()
 
-    return generate_report(soup, prev)
+    return generate_report(attnSoup, subSoup, prev)
 
 
 @app.route("/", methods=["GET"])
