@@ -312,21 +312,23 @@ def get_user_details(soup, prev):
 
 def get_subjects(soup, semester):
     """Extracts user subjects from BeautifulSoup parsed HTML content."""
-    return [
-        SUBJECT_CODE_REGEX.split(subject)[0].strip()
-        for subject in re.findall(
-            r'<h6 class="text-uppercase mb-auto">(.*?)</h6>',
-            re.search(
-                r"if \(selected == 'Semester " + semester + r"'\) \{(.*?)\}",
-                str(soup),
+    search_result = re.search(
+        r"if \(selected == 'Semester " + semester + r"'\) \{(.*?)\}",
+        str(soup),
+        re.DOTALL,
+    )
+    
+    if search_result:
+        return [
+            SUBJECT_CODE_REGEX.split(subject)[0].strip()
+            for subject in re.findall(
+                r'<h6 class="text-uppercase mb-auto">(.*?)</h6>',
+                search_result.group(1).strip(),
                 re.DOTALL,
             )
-            .group(1)
-            .strip(),
-            re.DOTALL,
-        )
-        if subject != ""
-    ]
+            if subject != ""
+        ]
+    return []
 
 
 def get_attendance_dataframe(soup, subjects):
