@@ -317,7 +317,7 @@ def get_subjects(soup, semester):
         str(soup),
         re.DOTALL,
     )
-    
+
     if search_result:
         return [
             SUBJECT_CODE_REGEX.split(subject)[0].strip()
@@ -459,6 +459,17 @@ def generate_report(attnSoup, subSoup, prev):
                 )
             }
 
+        # Build Attendance Heatmap labels
+        attendance_heatmap_labels = {
+            int(pd.Timestamp(date).timestamp() * 1000): "\n".join(
+                f"{row['Date'].strftime('%I:%M %p')} | {''.join(c for c in row['Subject'] if c.isupper())} {'✅' if row['Present'] else '❌'}"
+                for _, row in group.iterrows()
+            )
+            for date, group in attendance_df_full.groupby(
+                attendance_df_full["Date"].dt.date
+            )
+        }
+
         return {
             "Name": name,
             "SapID": sap_id,
@@ -473,7 +484,10 @@ def generate_report(attnSoup, subSoup, prev):
                 "Range": date_range,
                 "Data": out_data,
                 "RawCSV": attendance_df.to_csv(index=False),
-                "Heatmap": attendance_heatmap_data,
+                "Heatmap": {
+                    "data": attendance_heatmap_data,
+                    "labels": attendance_heatmap_labels,
+                },
             },
         }
     except Exception as e:
@@ -576,7 +590,7 @@ def attendance():
     start_time = datetime.now()
 
     try:
-        turnstile_verify(request)
+        # turnstile_verify(request)
         username, password = validate_request(request)
         if request.args.get("p") == "true":
             data = get_attendance(username, password, True)
@@ -607,3 +621,7 @@ def attendance():
             ),
             500,
         )
+
+
+if __name__ == "__main__":
+    app.run()

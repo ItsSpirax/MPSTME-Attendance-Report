@@ -1,3 +1,4 @@
+<!-- Thanks to Sanika Solge for letting me use her account for testing! -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -319,13 +320,14 @@
         displayUserDetails(data.data);
         renderAttendanceTable(data.data);
         isSmallScreen = null;
-        heatmapData = data.data.Attendance.Heatmap;
+        heatmapData = data.data.Attendance.Heatmap.data;
+        heatmapLabels = data.data.Attendance.Heatmap.labels;
         heatmapStartDate = data.data.Semester.Start;
         const resizeHandler = () => {
           const newIsSmallScreen = window.matchMedia('(max-width: 1080px)').matches;
           if (newIsSmallScreen !== isSmallScreen) {
             isSmallScreen = newIsSmallScreen;
-            renderAttendanceChart(heatmapData, heatmapStartDate);
+            renderAttendanceChart(heatmapData, heatmapLabels, heatmapStartDate);
           }
         };
         resizeHandler();
@@ -461,7 +463,7 @@
       });
     }
 
-    function renderAttendanceChart(data, startDate) {
+    function renderAttendanceChart(data, labels, startDate) {
       document.getElementById('attendance-heatmap').innerHTML = '';
       const cal = new CalHeatmap();
       const formattedData = Object.entries(data).map(([timestamp, value]) => ({
@@ -520,12 +522,14 @@
 
                 const day = dayjsDate.date();
                 const ordinalSuffix = getOrdinalSuffix(day);
+                const label = labels[dayjsDate.valueOf()];
 
                 return (
                   (value ? value : 'No') +
-                  (value == 1 ? ' lecture on ' : ' lectures on ') +
+                  (value == 1 ? ' hour on ' : ' hours on ') +
                   dayjsDate.format('MMMM D') +
-                  ordinalSuffix
+                  ordinalSuffix +
+                  (label !== undefined ? '\n\n' + label : '')
                 );
               },
             },

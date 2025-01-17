@@ -3,6 +3,6 @@ cryptography==44.0.0
 Flask==3.1.0
 Flask-Cors==5.0.0
 lxml==5.3.0
-num2words==0.5.13
+num2words==0.5.14
 pandas==2.2.3
 requests==2.32.3
