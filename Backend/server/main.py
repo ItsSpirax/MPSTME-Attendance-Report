@@ -460,9 +460,14 @@ def generate_report(attnSoup, subSoup, prev):
             }
 
         # Build Attendance Heatmap labels
+        def transform_subject(subject):
+            out = ''.join(c for c in subject if c.isupper() or c == ' ')
+            nout = ''.join(word[0] for word in out.split()) if len(out.replace(' ', '')) > 5 else out.replace(' ', '')
+            return nout.upper()
+
         attendance_heatmap_labels = {
             int(pd.Timestamp(date).timestamp() * 1000): "\n".join(
-                f"{row['Date'].strftime('%I:%M %p')} | {''.join(c for c in row['Subject'] if c.isupper())} {'✅' if row['Present'] else '❌'}"
+                f"{row['Date'].strftime('%I:%M %p')} | {transform_subject(row['Subject'])} {'✅' if row['Present'] else '❌'}"
                 for _, row in group.iterrows()
             )
             for date, group in attendance_df_full.groupby(
