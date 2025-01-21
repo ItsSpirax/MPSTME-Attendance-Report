@@ -265,8 +265,8 @@ def fun_fact(attendance_df):
             days_in_class = hours_in_lectures // 24
             if days_in_class < 1:
                 return f"📚 You’ve spent {hours_in_lectures} hours in lectures."
-            elif days_in_class < 30:
-                return f"📚 You’ve spent {days_in_class} days attending lectures. Almost a month of learning!"
+            elif days_in_class == 1:
+                return f"📚 You’ve spent 24 hours attending lectures. Keep up the good work!"
             return f"🗓️ You've spent a total of {days_in_class} days in class. That's dedication!"
 
         if rand == 7:
@@ -461,9 +461,13 @@ def generate_report(attnSoup, subSoup, prev):
 
         # Build Attendance Heatmap labels
         def transform_subject(subject):
-            out = ''.join(c for c in subject if c.isupper() or c == ' ')
-            nout = ''.join(word[0] for word in out.split()) if len(out.replace(' ', '')) > 5 else out.replace(' ', '')
-            return nout.upper()
+            out = "".join(c for c in subject if c.isupper() or c == " ")
+            nout = (
+                "".join(word[0] for word in out.split())
+                if len(out.replace(" ", "")) > 5
+                else out.replace(" ", "")
+            )
+            return nout[:5].upper()
 
         attendance_heatmap_labels = {
             int(pd.Timestamp(date).timestamp() * 1000): "\n".join(
@@ -595,7 +599,7 @@ def attendance():
     start_time = datetime.now()
 
     try:
-        # turnstile_verify(request)
+        turnstile_verify(request)
         username, password = validate_request(request)
         if request.args.get("p") == "true":
             data = get_attendance(username, password, True)
