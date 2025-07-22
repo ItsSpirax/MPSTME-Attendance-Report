@@ -39,6 +39,7 @@ from cryptography.hazmat.primitives.asymmetric import padding as crypto_padding
 from flask import Flask, request, redirect, jsonify
 from flask_cors import CORS
 from num2words import num2words
+import urllib
 
 
 # Initializing Flask app
@@ -503,9 +504,24 @@ def generate_report(attnSoup, subSoup, prev):
         raise ValueError(f"(VE-6) Failed to generate attendance report: {e}") from e
 
 
+def fix_redirect_url(response, *args, **kwargs):
+    """Forces redirects to HTTPS and removes explicit :80 port."""
+    if 'Location' in response.headers:
+        url_parts = list(urllib.parse.urlparse(response.headers['Location']))
+        
+        if url_parts[0] == 'http' or (url_parts[0] == 'https' and url_parts[1].endswith(':80')):
+            url_parts[0] = 'https'
+            if url_parts[1].endswith(':80'):
+                url_parts[1] = url_parts[1][:-3]
+
+            response.headers['Location'] = urllib.parse.urlunparse(url_parts)
+    return response
+
+
 def get_attendance(username, password, prev):
     """Fetches attendance by logging in and parsing the attendance page."""
     s = requests.Session()
+    s.hooks['response'].append(fix_redirect_url)
     try:
         # Login request
         login_data = {
