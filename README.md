@@ -1,4 +1,10 @@
 # MPSTME Attendance Report
+
+> [!WARNING]
+> **ARCHIVED PROJECT**
+>
+> As of **03-12-2025**, MPSTME updated their attendance system. This update has broken the functionality of this tool. Consequently, this repository has been **archived** and is preserved solely for reference purposes.
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FItsSpirax%2FMPSTME-Attendance-Report.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FItsSpirax%2FMPSTME-Attendance-Report?ref=badge_shield)
 
 This repository contains the code for a web application that allows NMIMS students to easily check their latest attendance records. The application fetches attendance data from the SVKM portal and displays it in a user-friendly format.
@@ -7,7 +13,7 @@ This web application has been hosted on Cloudflare Pages and Vercel for easy acc
 
 **Note:** This project is for educational purposes only. Use it responsibly and at your own risk.
 
-#### Try it out: [https://report.adith.tech](https://report.adith.tech)
+#### Try it out: ~~[https://report.adith.tech](https://report.adith.tech)~~ (Offline)
 
 ## Features
 
